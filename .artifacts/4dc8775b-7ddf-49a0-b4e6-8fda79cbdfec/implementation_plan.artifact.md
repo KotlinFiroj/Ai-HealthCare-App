@@ -1,58 +1,51 @@
-# Implementation Plan - Phase 3: Multi-Module Configuration & Convention Plugins
+# Implementation Plan - Phase 4: Design System
 
-Formalize the multi-module build logic to reduce duplication and enforce architectural boundaries using **Gradle Convention Plugins**.
+Implement the foundational visual identity and reusable UI components for **MediAI Enterprise** using Material 3.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase will transition the project to use an **Included Build** (`build-logic`) for common Gradle configurations.
+> This phase defines the look and feel of the entire platform.
 >
-> - **Build Logic**: We will move repetitive configuration (compile SDK, JVM targets, Hilt setup, Compose setup) into custom plugins.
-> - **Dependency Separation**: We will define clear rules for what modules can depend on others (e.g., `:core:network` should not depend on `:core:ui`).
+> - **Theme Selection**: We will use a healthcare-inspired palette: Primary Teal/Blue for trust, and Secondary Green for health/wellness.
+> - **Dynamic Color**: Support for Android 12+ dynamic color schemes.
+> - **Accessibility**: Ensuring all color combinations meet WCAG contrast requirements.
 
 ## Proposed Changes
 
-### Build Logic Structure
+### Core Design System (`:core:designsystem`)
 
-#### [NEW] [build-logic](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic)
-- Create a new directory `build-logic` as an included build.
-- Define a `convention` module within `build-logic`.
+#### [NEW] [Color.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/theme/Color.kt)
+- Define light and dark color schemes.
+- Define custom extended colors (e.g., success, warning, error specific to medical contexts).
 
-### Convention Plugins
+#### [NEW] [Type.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/theme/Type.kt)
+- Configure Material 3 Typography (Display, Headline, Title, Body, Label).
 
-#### [NEW] [AndroidLibraryConventionPlugin.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt)
-- Shared configuration for all Android library modules (CompileSdk 35, MinSdk 26, Java 17).
+#### [NEW] [Theme.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/theme/Theme.kt)
+- Create `MediAITheme` composable.
+- Handle Light Mode, Dark Mode, and Dynamic Color.
 
-#### [NEW] [AndroidComposeConventionPlugin.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic/convention/src/main/kotlin/AndroidComposeConventionPlugin.kt)
-- Centralized Jetpack Compose configuration.
+#### [NEW] [Icons.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/icon/MediAIIcons.kt)
+- Centralize all Material Icons used in the app (e.g., `HealthAndSafety`, `MedicalServices`, `Person`).
 
-#### [NEW] [AndroidHiltConventionPlugin.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic/convention/src/main/kotlin/AndroidHiltConventionPlugin.kt)
-- Standardized Hilt and KSP setup.
+#### [NEW] [Background.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/component/Background.kt)
+- Create a standard `MediAIBackground` for all screens.
 
-#### [NEW] [AndroidApplicationConventionPlugin.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt)
-- Shared configuration for the `:app` module.
+#### [NEW] [Button.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/component/Button.kt)
+- Implement enterprise-grade buttons (Primary, Outlined, Text).
 
-### Refactoring Existing Modules
+### App Module Updates
 
-#### [MODIFY] [All core modules](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/)
-- Update `build.gradle.kts` files to use the new convention plugins.
-- Remove redundant boilerplate.
-
-#### [MODIFY] [settings.gradle.kts](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/settings.gradle.kts)
-- Include the `build-logic` build.
-
-## Architecture & Module Rules
-
-We will enforce these rules:
-- `core:ui` depends on `core:designsystem`.
-- `core:data` depends on `core:network`, `core:database`, and `core:domain`.
-- `core:domain` is a pure Kotlin module (where possible) or minimal Android.
+#### [MODIFY] [MainActivity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/app/src/main/kotlin/com/mediai/enterprise/MainActivity.kt)
+- Wrap the UI with `MediAITheme`.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `./gradlew assemble` to ensure all modules compile with the new convention plugins.
-- Verify dependency graph using `./gradlew :app:dependencies`.
+- **Compose Previews**: Implement previews for all theme variations and components.
+- **Screenshot Tests (Placeholder)**: Setup structure for future screenshot testing.
 
 ### Manual Verification
-- Check that changing a version in `libs.versions.toml` correctly propagates through the convention plugins.
+- Verify Light and Dark mode switching in the IDE Preview.
+- Check contrast ratios for primary actions.

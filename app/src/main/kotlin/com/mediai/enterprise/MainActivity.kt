@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 
+import com.mediai.enterprise.core.designsystem.theme.MediAITheme
+
 /**
  * [MainActivity]
  * The entry point of the application.
@@ -23,12 +25,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Placeholder theme until core:designsystem is implemented
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                Greeting(
-                    name = "MediAI Enterprise",
-                    modifier = Modifier.padding(innerPadding)
-                )
+            MediAITheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Greeting(
+                        name = "MediAI Enterprise",
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
             }
         }
     }
