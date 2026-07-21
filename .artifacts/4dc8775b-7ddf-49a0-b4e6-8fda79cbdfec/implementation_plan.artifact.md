@@ -1,79 +1,72 @@
-# Implementation Plan - Phase 7: Doctor Appointment
+# Implementation Plan - Phase 8: Medical Reports & Prescription OCR
 
-Implement the doctor discovery and appointment booking ecosystem for **MediAI Enterprise**.
+Implement the document management system for **MediAI Enterprise**, enabling users to upload, scan, and extract intelligent insights from medical reports and prescriptions.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase introduces a complex booking workflow and data models for healthcare providers.
+> This phase involves high-complexity integrations:
 >
-> - **Booking Logic**: We will implement a multi-step booking flow (Select Doctor -> Select Slot -> Confirm).
-> - **Search & Filter**: Robust filtering by specialization and rating.
-> - **Slot Management**: Handling availability logic (mocked for this phase).
+> - **CameraX & OCR**: Implementing a custom camera interface for high-quality document scanning and text extraction.
+> - **Gemini Integration**: Using AI to parse raw OCR text into structured medical data (Doctor name, Medicines, Dosage).
+> - **File Handling**: Managing PDF and Image URIs safely within the Android ecosystem.
 
 ## Proposed Changes
 
-### Feature Appointment (`:feature:appointment`) [NEW MODULE]
+### Feature Reports (`:feature:reports`) [NEW MODULE]
 
-#### [NEW] [Feature Appointment Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment)
-- Create `:feature:appointment` module using the `mediai.android.library`, `mediai.android.compose`, and `mediai.android.hilt` convention plugins.
+#### [NEW] [Feature Reports Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports)
+- Create `:feature:reports` module using convention plugins.
 
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/domain)
-- **Doctor** model: Name, Specialization, Rating, Experience, Hospital.
-- **Appointment** model: DateTime, DoctorId, Status, Type (Video/In-person).
-- **TimeSlot** model: StartTime, EndTime, IsAvailable.
-- UseCases: `SearchDoctorsUseCase`, `GetDoctorDetailsUseCase`, `BookAppointmentUseCase`.
+#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain)
+- **MedicalReport** model: ID, Title, Category (Blood Test, MRI, etc.), Date, FileUrl, SyncStatus.
+- **Prescription** model: Extracted medicines, Dosage, Frequency, Doctor info.
+- UseCases: `UploadReportUseCase`, `ScanPrescriptionUseCase`, `GetReportTimelineUseCase`.
 
-#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/data)
-- `AppointmentRepository`: Manage doctor searches and booking operations.
-- Mock data source for various specializations (Cardiology, Neurology, Pediatrics, etc.).
+#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/data)
+- `ReportRepository`: Local persistence for report metadata and integration with OCR/AI services.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation)
-- **DoctorListScreen**: Search bar, category filters, and doctor cards.
-- **DoctorDetailsScreen**: Detailed bio, ratings, and "Book Now" action.
-- **BookingScreen**: Date picker and time slot selection grid.
-- **AppointmentViewModel**: State management for search and booking.
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation)
+- **ReportTimelineScreen**: Categorized list of all documents.
+- **CameraScanScreen**: CameraX implementation for document capture.
+- **ReportDetailScreen**: viewing the document and its AI-extracted summary.
+
+### AI Integration (`:core:ai`)
+
+#### [NEW] [MedicalOcrAnalyzer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalOcrAnalyzer.kt)
+- Use ML Kit OCR to extract text from scanned images.
+
+#### [NEW] [MedicalAiParser.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalAiParser.kt)
+- Use Gemini SDK to transform raw OCR text into structured JSON models.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `DOCTOR_LIST_ROUTE`, `DOCTOR_DETAILS_ROUTE`, and `BOOKING_ROUTE`.
-
-#### [NEW] [AppointmentNavigation.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/navigation/AppointmentNavigation.kt)
-- Define the appointment navigation graph.
-
-### App Module Updates
-
-#### [MODIFY] [MainActivity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/app/src/main/kotlin/com/mediai/enterprise/MainActivity.kt)
-- Integrate `appointmentGraph` into the `NavHost`.
-- Update Dashboard (Home) to navigate to the Appointment feature.
+- Add `REPORTS_TIMELINE_ROUTE`, `SCAN_ROUTE`, `REPORT_DETAIL_ROUTE`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Appt[:feature:appointment] --> C_Domain[:core:domain]
-    F_Appt --> C_UI[:core:ui]
-    F_Appt --> C_DS[:core:designsystem]
-    F_Appt --> C_Nav[:core:navigation]
+    F_Reports[:feature:reports] --> C_AI[:core:ai]
+    F_Reports --> C_UI[:core:ui]
 
-    subgraph UI Screens
-        DL[DoctorListScreen]
-        DD[DoctorDetailsScreen]
-        BS[BookingScreen]
+    subgraph Scanning Workflow
+        Scan[CameraX Scan] --> OCR[ML Kit OCR]
+        OCR --> Gemini[Gemini Parsing]
+        Gemini --> StructuredData[Structured Prescription]
     end
 
-    ApptVM[AppointmentViewModel] --> ApptRepository
-    ApptRepository --> MockData
+    StructuredData --> DB[Local Database]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify filtering logic in `SearchDoctorsUseCase`.
-- **ViewModel Tests**: Verify booking state transitions.
-- **Compose Previews**: Previews for doctor cards and slot selection UI.
+- **Unit Tests**: Mock Gemini responses and verify parsing logic in `MedicalAiParser`.
+- **Unit Tests**: Test `ReportTimeline` sorting and filtering logic.
 
 ### Manual Verification
-- Test searching for a doctor and navigating through the full booking flow.
-- Verify the responsive grid layout for time slots on mobile and tablet.
+- Test PDF/Image upload selection.
+- Verify CameraX document capture and OCR accuracy on real-world medical reports.
+- Check structured data extraction for a sample prescription image.

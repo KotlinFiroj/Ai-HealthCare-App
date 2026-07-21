@@ -23,6 +23,7 @@ import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
 import com.mediai.enterprise.feature.auth.navigation.authGraph
 import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
+import com.mediai.enterprise.feature.reports.navigation.reportGraph
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -61,10 +62,15 @@ class MainActivity : ComponentActivity() {
                         homeGraph(
                             onNavigateToAppointments = {
                                 navController.navigate(MediAINavDestinations.APPOINTMENTS_ROUTE)
+                            },
+                            onNavigateToReports = {
+                                navController.navigate(MediAINavDestinations.REPORTS_ROUTE)
                             }
                         )
 
                         appointmentGraph(navController)
+
+                        reportGraph(navController)
                     }
                 }
             }

@@ -1,20 +1,19 @@
-# Tasks - Phase 7: Doctor Appointment
+# Tasks - Phase 8: Medical Reports & Prescription OCR
 
-- `[x]` Setup `:feature:appointment` Module
-- `[x]` Implement Domain Layer
-    - `[x]` `Doctor`, `Appointment`, `TimeSlot` models
-    - `[x]` `SearchDoctorsUseCase`
-    - `[x]` `BookAppointmentUseCase`
+- `[x]` Setup `:feature:reports` Module
+- `[x]` Implement Domain Models
+    - `[x]` `MedicalReport` and `Prescription`
+- `[x]` Implement `:core:ai` Logic
+    - `[x]` `MedicalOcrAnalyzer` (ML Kit)
+    - `[x]` `MedicalAiParser` (Gemini)
 - `[x]` Implement Data Layer
-    - `[x]` `AppointmentRepository` with Mock implementation
-- `[x]` Implement UI Layer - Components
-    - `[x]` `DoctorCard`
-    - `[x]` `SlotSelectionGrid`
-- `[x]` Implement UI Layer - Screens
-    - `[x]` `DoctorListScreen`
-    - `[x]` `DoctorDetailsScreen`
-    - `[x]` `BookingScreen`
-- `[x]` Implement `AppointmentViewModel`
-- `[x]` Configure Navigation for Appointments
-- `[x]` Integrate with Dashboard and MainActivity
-- `[x]` Verify Booking Flow
+    - `[x]` `ReportRepository`
+- `[x]` Implement UI Components
+    - `[x]` CameraX `DocumentScanner`
+    - `[x]` `ReportCard`
+- `[x]` Implement Screens
+    - `[x]` `ReportTimelineScreen`
+    - `[x]` `ScanScreen`
+- `[x]` Configure Navigation for Reports
+- `[x]` Integrate with Home Dashboard
+- `[x]` Verify OCR and AI Parsing Flow

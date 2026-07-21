@@ -22,12 +22,14 @@ import com.mediai.enterprise.feature.home.presentation.components.MetricCard
 @Composable
 fun HomeRoute(
     onNavigateToAppointments: () -> Unit,
+    onNavigateToReports: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     HomeScreen(
         uiState = uiState,
-        onNavigateToAppointments = onNavigateToAppointments
+        onNavigateToAppointments = onNavigateToAppointments,
+        onNavigateToReports = onNavigateToReports
     )
 }
 
@@ -35,7 +37,8 @@ fun HomeRoute(
 @Composable
 internal fun HomeScreen(
     uiState: HomeUiState,
-    onNavigateToAppointments: () -> Unit
+    onNavigateToAppointments: () -> Unit,
+    onNavigateToReports: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -71,13 +74,26 @@ internal fun HomeScreen(
                     }
 
                     item {
-                        MediAIButton(
-                            onClick = onNavigateToAppointments,
-                            modifier = Modifier.fillMaxWidth()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Icon(MediAIIcons.Appointments, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Find a Doctor")
+                            MediAIButton(
+                                onClick = onNavigateToAppointments,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(MediAIIcons.Appointments, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Doctors")
+                            }
+                            MediAIButton(
+                                onClick = onNavigateToReports,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(MediAIIcons.Check, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Reports")
+                            }
                         }
                     }
 

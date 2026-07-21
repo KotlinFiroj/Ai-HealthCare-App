@@ -10,4 +10,5 @@ android {
 dependencies {
     implementation(project(":core:common"))
     implementation(libs.google.generativeai)
+    implementation(libs.google.mlkit.ocr)
 }

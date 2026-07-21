@@ -12,9 +12,13 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.homeGraph(
-    onNavigateToAppointments: () -> Unit
+    onNavigateToAppointments: () -> Unit,
+    onNavigateToReports: () -> Unit
 ) {
     composable(route = MediAINavDestinations.HOME_ROUTE) {
-        HomeRoute(onNavigateToAppointments = onNavigateToAppointments)
+        HomeRoute(
+            onNavigateToAppointments = onNavigateToAppointments,
+            onNavigateToReports = onNavigateToReports
+        )
     }
 }
