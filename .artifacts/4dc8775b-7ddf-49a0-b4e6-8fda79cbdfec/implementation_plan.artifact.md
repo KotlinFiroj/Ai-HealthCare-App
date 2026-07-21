@@ -1,90 +1,81 @@
-# Implementation Plan - Phase 5: Authentication
+# Implementation Plan - Phase 6: Dashboard
 
-Implement a secure, enterprise-grade authentication system for **MediAI Enterprise**, including JWT management, biometric login, and a modularized UI.
+Implement the main landing page of **MediAI Enterprise**, providing a comprehensive overview of the user's health status, upcoming tasks, and AI-driven insights.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase introduces critical security features.
+> This phase introduces the main user interface and the first integration of health metrics.
 >
-> - **Biometric Integration**: We will support Fingerprint and Face Unlock using the Android Biometric API.
-> - **Secure Token Storage**: JWT tokens will be stored in `EncryptedSharedPreferences` within `:core:security`.
-> - **JWT Management**: Automatic token injection and refresh logic in `:core:network`.
-> - **Modular UI**: All authentication screens will reside in the new `:feature:auth` module.
+> - **Modular UI**: We will create the `:feature:home` module.
+> - **Health Metrics**: Initial implementation of Health Score, Water Intake, and Sleep tracking cards.
+> - **AI Integration**: A dedicated section for "AI Suggestions" that will eventually pull data from the Gemini-powered analysis engine.
+> - **Data Mocking**: Since the backend is not yet fully implemented, we will use mock data sources for initial dashboard population.
 
 ## Proposed Changes
 
-### Core Security (`:core:security`)
+### Feature Home (`:feature:home`) [NEW MODULE]
 
-#### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
-- Add `androidx.biometric` and `androidx.security-crypto` dependencies.
+#### [NEW] [Feature Home Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home)
+- Create `:feature:home` module using the `mediai.android.library`, `mediai.android.compose`, and `mediai.android.hilt` convention plugins.
 
-#### [NEW] [TokenManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/TokenManager.kt)
-- Manage JWT and Refresh tokens using `EncryptedSharedPreferences`.
+#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/domain)
+- Define `HealthMetrics` model (Heart Rate, Blood Pressure, Weight, etc.).
+- Define `DashboardData` model (Health Score, Daily Goals, Upcoming Appointment).
+- Create `GetDashboardDataUseCase`.
 
-#### [NEW] [BiometricAuthenticator.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/BiometricAuthenticator.kt)
-- Helper class for biometric authentication requests.
+#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/data)
+- Implement `HomeRepository` to fetch dashboard data (from local Room cache or mock remote).
 
-### Core Network (`:core:network`)
+#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/presentation/components)
+- **HealthScoreCard**: Circular indicator for the overall health score.
+- **MetricCard**: Reusable card for single metrics (Water, Sleep, Steps).
+- **AiSuggestionsSection**: Horizontal list of AI-generated health tips.
 
-#### [NEW] [AuthInterceptor.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/network/src/main/kotlin/com/mediai/enterprise/core/network/AuthInterceptor.kt)
-- Intercepts outgoing requests to add the `Authorization: Bearer <token>` header.
-
-#### [NEW] [TokenAuthenticator.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/network/src/main/kotlin/com/mediai/enterprise/core/network/TokenAuthenticator.kt)
-- Automatically handles `401 Unauthorized` by attempting a token refresh.
-
-### Feature Authentication (`:feature:auth`) [NEW MODULE]
-
-#### [NEW] [Feature Auth Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth)
-- Create `:feature:auth` module using the `mediai.android.library`, `mediai.android.compose`, and `mediai.android.hilt` convention plugins.
-
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/domain)
-- Define `AuthRepository` interface.
-- Implement `LoginUseCase`, `RegisterUseCase`, and `ValidateOtpUseCase`.
-
-#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/data)
-- Implement `AuthRepositoryImpl` using `AuthApiService`.
-- Define `AuthApiService` for backend communication.
-
-#### [NEW] [UI Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation)
-- **LoginScreen**: Input fields for email/password and Biometric login button.
-- **RegisterScreen**: User onboarding flow.
-- **OtpScreen**: For 2FA/OTP verification.
-- **AuthViewModel**: State management for the auth flow.
+#### [NEW] [UI Layer - Screen](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/presentation/HomeScreen.kt)
+- The main scrolling dashboard containing all health segments.
+- **HomeViewModel**: Managing the dashboard state and loading logic.
 
 ### Navigation (`:core:navigation`)
 
-#### [NEW] [AuthNavigation.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/AuthNavigation.kt)
-- Define navigation routes and graphs for the authentication feature.
+#### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
+- Ensure `HOME_ROUTE` is correctly defined.
+
+#### [NEW] [HomeNavigation.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/navigation/HomeNavigation.kt)
+- Define the home graph and navigation entry point.
+
+### App Module Updates
+
+#### [MODIFY] [MainActivity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/app/src/main/kotlin/com/mediai/enterprise/MainActivity.kt)
+- Add the `homeGraph` to the `NavHost`.
+- Handle navigation from Login success to Home.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Auth[:feature:auth] --> C_Security[:core:security]
-    F_Auth --> C_Network[:core:network]
-    F_Auth --> C_Navigation[:core:navigation]
-    F_Auth --> C_UI[:core:ui]
+    F_Home[:feature:home] --> C_Domain[:core:domain]
+    F_Home --> C_UI[:core:ui]
+    F_Home --> C_DS[:core:designsystem]
+    F_Home --> C_Nav[:core:navigation]
 
-    subgraph Data Flow
-        F_Auth_UI[UI] --> F_Auth_VM[ViewModel]
-        F_Auth_VM --> F_Auth_UC[UseCases]
-        F_Auth_UC --> F_Auth_Repo[AuthRepository]
-        F_Auth_Repo --> C_Net_Client[Retrofit Client]
+    subgraph Dashboard UI
+        HS[HealthScoreCard]
+        MC[MetricCards]
+        AI[AiSuggestionsSection]
     end
 
-    C_Net_Client -.-> C_Net_Interceptor[AuthInterceptor]
-    C_Net_Interceptor --> C_Sec_TM[TokenManager]
+    HomeVM[HomeViewModel] --> HomeRepository
+    HomeRepository --> MockDataSource
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Test `LoginUseCase` with mocked repository.
-- **Unit Tests**: Test `AuthInterceptor` and `TokenAuthenticator`.
-- **ViewModel Tests**: Test state transitions during login.
+- **Unit Tests**: Test `GetDashboardDataUseCase`.
+- **ViewModel Tests**: Verify initial loading state and data population in `HomeViewModel`.
+- **Compose Previews**: Previews for `HealthScoreCard` and `MetricCard` in light/dark modes.
 
 ### Manual Verification
-- Verify successful login with mock credentials.
-- Test biometric prompt on supported devices/emulators.
-- Check `EncryptedSharedPreferences` using Android Studio's Device File Explorer.
+- Verify the dashboard layout on different screen sizes (Phone and Tablet).
+- Check responsiveness when navigating from Login.

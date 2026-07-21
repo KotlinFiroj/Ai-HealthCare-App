@@ -1,22 +1,17 @@
-# Tasks - Phase 5: Authentication
+# Tasks - Phase 6: Dashboard
 
-- `[x]` Update Dependencies in `libs.versions.toml`
-- `[x]` Setup `:feature:auth` Module
-- `[x]` Implement `:core:security`
-    - `[x]` `TokenManager` (EncryptedSharedPreferences)
-    - `[x]` `BiometricAuthenticator`
-- `[x]` Implement `:core:network` Auth Support
-    - `[x]` `AuthInterceptor`
-    - `[x]` `TokenAuthenticator`
-- `[x]` Implement `:feature:auth` Domain Layer
-    - `[x]` Models and UseCases
-    - `[x]` Repository Interface
-- `[x]` Implement `:feature:auth` Data Layer
-    - `[x]` Repository Implementation
-    - `[x]` `AuthApiService`
-- `[x]` Implement `:feature:auth` UI Layer
-    - `[x]` `AuthViewModel`
-    - `[x]` `LoginScreen`
-    - `[x]` `RegisterScreen`
-- `[x]` Implement `:core:navigation` for Auth
-- `[x]` Verify Auth Flow with Mock Data
+- `[x]` Setup `:feature:home` Module
+- `[x]` Define Domain Models and UseCases
+    - `[x]` `HealthMetric` and `DashboardData` models
+    - `[x]` `GetDashboardDataUseCase`
+- `[x]` Implement Data Layer
+    - `[x]` `HomeRepository` with Mock implementation
+- `[x]` Create Reusable Dashboard Components
+    - `[x]` `HealthScoreCard`
+    - `[x]` `MetricCard`
+    - `[x]` `AiSuggestionCard`
+- `[x]` Implement `HomeViewModel`
+- `[x]` Implement `HomeScreen` UI
+- `[x]` Configure Navigation for Home
+- `[x]` Integrate with `MainActivity`
+- `[x]` Verify UI and State

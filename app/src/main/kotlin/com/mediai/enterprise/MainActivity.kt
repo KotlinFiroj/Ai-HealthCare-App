@@ -14,11 +14,14 @@ import dagger.hilt.android.AndroidEntryPoint
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.mediai.enterprise.core.designsystem.theme.MediAITheme
 import com.mediai.enterprise.core.navigation.MediAINavDestinations
 import com.mediai.enterprise.feature.auth.navigation.authGraph
+import com.mediai.enterprise.feature.home.navigation.homeGraph
+import com.mediai.enterprise.feature.home.navigation.navigateToHome
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -43,12 +46,18 @@ class MainActivity : ComponentActivity() {
                     ) {
                         authGraph(
                             onLoginSuccess = {
-                                // Navigate to Home
+                                navController.navigateToHome(
+                                    navOptions = NavOptions.Builder()
+                                        .setPopUpTo(MediAINavDestinations.AUTH_ROUTE, inclusive = true)
+                                        .build()
+                                )
                             },
                             onNavigateToRegister = {
                                 // navController.navigate("register")
                             }
                         )
+
+                        homeGraph()
                     }
                 }
             }
