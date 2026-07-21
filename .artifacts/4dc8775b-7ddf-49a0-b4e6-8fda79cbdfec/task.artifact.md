@@ -1,17 +1,20 @@
-# Tasks - Phase 6: Dashboard
+# Tasks - Phase 7: Doctor Appointment
 
-- `[x]` Setup `:feature:home` Module
-- `[x]` Define Domain Models and UseCases
-    - `[x]` `HealthMetric` and `DashboardData` models
-    - `[x]` `GetDashboardDataUseCase`
+- `[x]` Setup `:feature:appointment` Module
+- `[x]` Implement Domain Layer
+    - `[x]` `Doctor`, `Appointment`, `TimeSlot` models
+    - `[x]` `SearchDoctorsUseCase`
+    - `[x]` `BookAppointmentUseCase`
 - `[x]` Implement Data Layer
-    - `[x]` `HomeRepository` with Mock implementation
-- `[x]` Create Reusable Dashboard Components
-    - `[x]` `HealthScoreCard`
-    - `[x]` `MetricCard`
-    - `[x]` `AiSuggestionCard`
-- `[x]` Implement `HomeViewModel`
-- `[x]` Implement `HomeScreen` UI
-- `[x]` Configure Navigation for Home
-- `[x]` Integrate with `MainActivity`
-- `[x]` Verify UI and State
+    - `[x]` `AppointmentRepository` with Mock implementation
+- `[x]` Implement UI Layer - Components
+    - `[x]` `DoctorCard`
+    - `[x]` `SlotSelectionGrid`
+- `[x]` Implement UI Layer - Screens
+    - `[x]` `DoctorListScreen`
+    - `[x]` `DoctorDetailsScreen`
+    - `[x]` `BookingScreen`
+- `[x]` Implement `AppointmentViewModel`
+- `[x]` Configure Navigation for Appointments
+- `[x]` Integrate with Dashboard and MainActivity
+- `[x]` Verify Booking Flow

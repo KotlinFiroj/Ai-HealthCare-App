@@ -11,8 +11,10 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
     this.navigate(MediAINavDestinations.HOME_ROUTE, navOptions)
 }
 
-fun NavGraphBuilder.homeGraph() {
+fun NavGraphBuilder.homeGraph(
+    onNavigateToAppointments: () -> Unit
+) {
     composable(route = MediAINavDestinations.HOME_ROUTE) {
-        HomeRoute()
+        HomeRoute(onNavigateToAppointments = onNavigateToAppointments)
     }
 }

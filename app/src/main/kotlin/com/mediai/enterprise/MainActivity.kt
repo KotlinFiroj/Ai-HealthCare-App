@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.mediai.enterprise.core.designsystem.theme.MediAITheme
 import com.mediai.enterprise.core.navigation.MediAINavDestinations
+import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
 import com.mediai.enterprise.feature.auth.navigation.authGraph
 import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
@@ -57,7 +58,13 @@ class MainActivity : ComponentActivity() {
                             }
                         )
 
-                        homeGraph()
+                        homeGraph(
+                            onNavigateToAppointments = {
+                                navController.navigate(MediAINavDestinations.APPOINTMENTS_ROUTE)
+                            }
+                        )
+
+                        appointmentGraph(navController)
                     }
                 }
             }

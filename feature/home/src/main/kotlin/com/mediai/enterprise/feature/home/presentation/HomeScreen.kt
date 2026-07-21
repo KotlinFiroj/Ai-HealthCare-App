@@ -21,16 +21,21 @@ import com.mediai.enterprise.feature.home.presentation.components.MetricCard
 
 @Composable
 fun HomeRoute(
+    onNavigateToAppointments: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    HomeScreen(uiState = uiState)
+    HomeScreen(
+        uiState = uiState,
+        onNavigateToAppointments = onNavigateToAppointments
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeScreen(
-    uiState: HomeUiState
+    uiState: HomeUiState,
+    onNavigateToAppointments: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -63,6 +68,17 @@ internal fun HomeScreen(
                 uiState.data?.let { data ->
                     item {
                         HealthScoreCard(score = data.healthScore)
+                    }
+
+                    item {
+                        MediAIButton(
+                            onClick = onNavigateToAppointments,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(MediAIIcons.Appointments, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Find a Doctor")
+                        }
                     }
 
                     item {

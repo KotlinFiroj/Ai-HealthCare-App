@@ -1,41 +1,39 @@
-# Walkthrough - Phase 6: Dashboard
+# Walkthrough - Phase 7: Doctor Appointment
 
-We have successfully implemented the main Dashboard (Home) for **MediAI Enterprise**. This serves as the central hub for the user's health information.
+We have implemented the **Doctor Appointment** ecosystem, enabling users to search for healthcare providers and book consultations seamlessly.
 
 ## Changes Made
 
-### 1. New Feature Module: `:feature:home`
-- Created the `:feature:home` module following the project's Clean Architecture and modularization standards.
-- Registered the module in `settings.gradle.kts` and configured its dependencies in `build.gradle.kts`.
+### 1. New Feature Module: `:feature:appointment`
+- Created the `:feature:appointment` module using our established convention plugins.
+- Implemented a clean separation of Domain, Data, and Presentation layers.
 
 ### 2. Domain & Data Layers
-- **Domain Models**: Defined `DashboardData`, `HealthMetric`, and `AiSuggestion` to represent the information displayed on the dashboard.
-- **UseCase**: Implemented `GetDashboardDataUseCase` to decouple the UI from the data source.
-- **Repository**: Created `HomeRepository` and a mock `HomeRepositoryImpl` that provides realistic health data with a simulated delay to test loading states.
+- **Comprehensive Models**: Defined `Doctor`, `Appointment`, and `TimeSlot` entities to capture the full scope of a medical booking.
+- **Repository Implementation**: Created `AppointmentRepositoryImpl` with a rich set of mock data, including various specializations and hospitals.
+- **Business Logic**: Implemented `SearchDoctorsUseCase` and `BookAppointmentUseCase` to handle doctor discovery and reservation.
 
-### 3. Dashboard UI Components
-Implemented several reusable Material 3 components in `:feature:home`:
-- **HealthScoreCard**: A prominent card showing the overall health score with a circular progress indicator.
-- **MetricCard**: A compact card for displaying individual vitals like Steps, Water, and Sleep, including trend indicators.
-- **AiSuggestionCard**: A secondary-colored card designed to highlight AI-generated health tips and tasks.
+### 3. UI Implementation
+Implemented a multi-step booking workflow using Material 3:
+- **Doctor Discovery**: `DoctorListScreen` with real-time search and specialized category filtering.
+- **Provider Details**: `DoctorDetailsScreen` showing professional bio, ratings, and experience.
+- **Slot Selection**: `BookingScreen` featuring a responsive grid for selecting available time slots.
+- **Components**: Developed reusable `DoctorCard` and `SlotSelectionGrid` components.
 
-### 4. Screen Implementation
-- **HomeScreen**: A vertically scrolling dashboard that organizes the cards logically. It uses `Scaffold` with a `LargeTopAppBar` for a modern enterprise look.
-- **HomeViewModel**: Manages the UI state, handling loading, success, and error states using a `StateFlow`.
-
-### 5. Navigation Integration
-- Defined `homeGraph` in `:feature:home:navigation` to encapsulate the home-related screens.
-- Updated `MainActivity` to include the home graph in the `NavHost` and configured navigation to transition from the Login success event to the Dashboard.
+### 4. Navigation & Integration
+- **Feature Graph**: Defined a nested navigation graph for appointments, managing the flow from list to details to booking.
+- **Dashboard Integration**: Added a "Find a Doctor" shortcut on the Home dashboard for quick access.
+- **Shared ViewModel**: Utilized a Hilt-provided ViewModel scoped to the navigation graph to maintain state across the booking flow.
 
 ## Verification Results
 
-### UI and State
-- Verified the layout of the `HomeScreen` with various health metrics.
-- Confirmed that the loading indicator appears during data fetching.
-- Verified that the navigation from Login to Home correctly pops the Auth stack.
+### Booking Workflow
+- Verified the transition from the Dashboard to the Doctor List.
+- Confirmed that searching filters the list of mock doctors correctly.
+- Verified that selecting a time slot and confirming "books" the appointment (simulated success).
 
-> [!TIP]
-> The Dashboard is designed to be the "Pulse" of the app. In future phases, we will integrate real data from the backend and use Gemini to generate the content for the `AiSuggestionCard`s dynamically.
+> [!IMPORTANT]
+> The booking flow uses `java.time` APIs. Ensure the app target remains at least SDK 26 for full compatibility without desugaring.
 
 ## Next Steps
-In **Phase 7: Doctor Appointment**, we will implement the doctor search and slot booking functionality, creating the `:feature:appointment` module.
+In **Phase 8: Medical Reports**, we will implement the functionality to upload, scan (OCR), and manage medical documents in the `:feature:reports` module.

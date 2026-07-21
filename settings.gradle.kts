@@ -43,3 +43,4 @@ include(":core:util")
 // Feature Modules
 include(":feature:auth")
 include(":feature:home")
+include(":feature:appointment")
