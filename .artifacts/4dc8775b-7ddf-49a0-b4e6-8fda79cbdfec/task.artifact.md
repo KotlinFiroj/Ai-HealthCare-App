@@ -1,11 +1,22 @@
-# Tasks - Phase 4: Design System
+# Tasks - Phase 5: Authentication
 
-- `[x]` Define Color Palette (`theme/Color.kt`)
-- `[x]` Define Typography (`theme/Type.kt`)
-- `[x]` Implement `MediAITheme` (`theme/Theme.kt`)
-- `[x]` Centralize Icons (`icon/MediAIIcons.kt`)
-- `[x]` Create Base Components
-    - `[x]` `MediAIBackground`
-    - `[x]` `MediAIButton`
-- `[x]` Apply Theme to `MainActivity`
-- `[x]` Add Compose Previews for Verification
+- `[x]` Update Dependencies in `libs.versions.toml`
+- `[x]` Setup `:feature:auth` Module
+- `[x]` Implement `:core:security`
+    - `[x]` `TokenManager` (EncryptedSharedPreferences)
+    - `[x]` `BiometricAuthenticator`
+- `[x]` Implement `:core:network` Auth Support
+    - `[x]` `AuthInterceptor`
+    - `[x]` `TokenAuthenticator`
+- `[x]` Implement `:feature:auth` Domain Layer
+    - `[x]` Models and UseCases
+    - `[x]` Repository Interface
+- `[x]` Implement `:feature:auth` Data Layer
+    - `[x]` Repository Implementation
+    - `[x]` `AuthApiService`
+- `[x]` Implement `:feature:auth` UI Layer
+    - `[x]` `AuthViewModel`
+    - `[x]` `LoginScreen`
+    - `[x]` `RegisterScreen`
+- `[x]` Implement `:core:navigation` for Auth
+- `[x]` Verify Auth Flow with Mock Data

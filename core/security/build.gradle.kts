@@ -9,5 +9,6 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.biometric)
 }

@@ -40,6 +40,6 @@ include(":core:testing")
 include(":core:navigation")
 include(":core:util")
 
-// Feature Modules (Placeholders for future phases)
-// include(":feature:auth")
+// Feature Modules
+include(":feature:auth")
 // include(":feature:home")

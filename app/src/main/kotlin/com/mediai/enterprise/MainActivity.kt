@@ -12,7 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import com.mediai.enterprise.core.designsystem.theme.MediAITheme
+import com.mediai.enterprise.core.navigation.MediAINavDestinations
+import com.mediai.enterprise.feature.auth.navigation.authGraph
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * [MainActivity]
@@ -26,11 +33,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MediAITheme {
+                val navController = rememberNavController()
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "MediAI Enterprise",
+                    NavHost(
+                        navController = navController,
+                        startDestination = MediAINavDestinations.AUTH_ROUTE,
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    ) {
+                        authGraph(
+                            onLoginSuccess = {
+                                // Navigate to Home
+                            },
+                            onNavigateToRegister = {
+                                // navController.navigate("register")
+                            }
+                        )
+                    }
                 }
             }
         }
