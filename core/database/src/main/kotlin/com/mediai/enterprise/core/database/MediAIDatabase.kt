@@ -1,0 +1,19 @@
+package com.mediai.enterprise.core.database
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.mediai.enterprise.core.database.dao.MedicineDao
+import com.mediai.enterprise.core.database.entity.MedicineEntity
+
+/**
+ * [MediAIDatabase]
+ * The main Room database for the MediAI platform.
+ */
+@Database(
+    entities = [MedicineEntity::class],
+    version = 1,
+    exportSchema = false
+)
+abstract class MediAIDatabase : RoomDatabase() {
+    abstract fun medicineDao(): MedicineDao
+}

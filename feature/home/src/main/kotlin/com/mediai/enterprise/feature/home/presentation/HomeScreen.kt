@@ -23,13 +23,15 @@ import com.mediai.enterprise.feature.home.presentation.components.MetricCard
 fun HomeRoute(
     onNavigateToAppointments: () -> Unit,
     onNavigateToReports: () -> Unit,
+    onNavigateToReminders: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     HomeScreen(
         uiState = uiState,
         onNavigateToAppointments = onNavigateToAppointments,
-        onNavigateToReports = onNavigateToReports
+        onNavigateToReports = onNavigateToReports,
+        onNavigateToReminders = onNavigateToReminders
     )
 }
 
@@ -38,7 +40,8 @@ fun HomeRoute(
 internal fun HomeScreen(
     uiState: HomeUiState,
     onNavigateToAppointments: () -> Unit,
-    onNavigateToReports: () -> Unit
+    onNavigateToReports: () -> Unit,
+    onNavigateToReminders: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -94,6 +97,15 @@ internal fun HomeScreen(
                                 Spacer(Modifier.width(8.dp))
                                 Text("Reports")
                             }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        MediAIButton(
+                            onClick = onNavigateToReminders,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(MediAIIcons.Notifications, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Medicine Reminders")
                         }
                     }
 

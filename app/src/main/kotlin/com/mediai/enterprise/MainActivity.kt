@@ -19,10 +19,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.mediai.enterprise.core.designsystem.theme.MediAITheme
 import com.mediai.enterprise.core.navigation.MediAINavDestinations
+import com.mediai.enterprise.core.navigation.REMINDERS_ROUTE
 import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
 import com.mediai.enterprise.feature.auth.navigation.authGraph
 import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
+import com.mediai.enterprise.feature.reminder.navigation.reminderGraph
 import com.mediai.enterprise.feature.reports.navigation.reportGraph
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -65,12 +67,17 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToReports = {
                                 navController.navigate(MediAINavDestinations.REPORTS_ROUTE)
+                            },
+                            onNavigateToReminders = {
+                                navController.navigate(REMINDERS_ROUTE)
                             }
                         )
 
                         appointmentGraph(navController)
 
                         reportGraph(navController)
+
+                        reminderGraph(navController)
                     }
                 }
             }

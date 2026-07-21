@@ -1,19 +1,19 @@
-# Tasks - Phase 8: Medical Reports & Prescription OCR
+# Tasks - Phase 9: Medicine Reminder & Smart Notifications
 
-- `[x]` Setup `:feature:reports` Module
-- `[x]` Implement Domain Models
-    - `[x]` `MedicalReport` and `Prescription`
-- `[x]` Implement `:core:ai` Logic
-    - `[x]` `MedicalOcrAnalyzer` (ML Kit)
-    - `[x]` `MedicalAiParser` (Gemini)
-- `[x]` Implement Data Layer
-    - `[x]` `ReportRepository`
-- `[x]` Implement UI Components
-    - `[x]` CameraX `DocumentScanner`
-    - `[x]` `ReportCard`
-- `[x]` Implement Screens
-    - `[x]` `ReportTimelineScreen`
-    - `[x]` `ScanScreen`
-- `[x]` Configure Navigation for Reports
+- `[x]` Implement `:core:database` Foundation
+    - `[x]` `MedicineEntity`
+    - `[x]` `MedicineDao`
+    - `[x]` `MediAIDatabase`
+- `[x]` Setup `:feature:reminder` Module
+- `[x]` Implement `:core:common` Utilities
+    - `[x]` `NotificationHelper`
+- `[x]` Implement Reminder Engine
+    - `[x]` `MedicineReminderWorker`
+    - `[x]` `ReminderScheduler`
+- `[x]` Implement UI Layer
+    - `[x]` `ReminderListScreen`
+    - `[ ]` `AddMedicineScreen`
+    - `[x]` `ReminderViewModel`
+- `[x]` Configure Navigation for Reminders
 - `[x]` Integrate with Home Dashboard
-- `[x]` Verify OCR and AI Parsing Flow
+- `[ ]` Verify Notification and Background Scheduling

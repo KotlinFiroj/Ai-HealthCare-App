@@ -13,12 +13,14 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 
 fun NavGraphBuilder.homeGraph(
     onNavigateToAppointments: () -> Unit,
-    onNavigateToReports: () -> Unit
+    onNavigateToReports: () -> Unit,
+    onNavigateToReminders: () -> Unit
 ) {
     composable(route = MediAINavDestinations.HOME_ROUTE) {
         HomeRoute(
             onNavigateToAppointments = onNavigateToAppointments,
-            onNavigateToReports = onNavigateToReports
+            onNavigateToReports = onNavigateToReports,
+            onNavigateToReminders = onNavigateToReminders
         )
     }
 }

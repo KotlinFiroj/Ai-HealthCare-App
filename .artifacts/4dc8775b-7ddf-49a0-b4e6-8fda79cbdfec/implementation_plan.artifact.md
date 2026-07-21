@@ -1,72 +1,85 @@
-# Implementation Plan - Phase 8: Medical Reports & Prescription OCR
+# Implementation Plan - Phase 9: Medicine Reminder & Smart Notifications
 
-Implement the document management system for **MediAI Enterprise**, enabling users to upload, scan, and extract intelligent insights from medical reports and prescriptions.
+Implement an intelligent medication scheduling and reminder system that leverages extracted prescription data and utilizes **WorkManager** for reliable background notifications.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase involves high-complexity integrations:
+> This phase involves background processing and system-level notifications.
 >
-> - **CameraX & OCR**: Implementing a custom camera interface for high-quality document scanning and text extraction.
-> - **Gemini Integration**: Using AI to parse raw OCR text into structured medical data (Doctor name, Medicines, Dosage).
-> - **File Handling**: Managing PDF and Image URIs safely within the Android ecosystem.
+> - **WorkManager**: We will use `WorkManager` for persistent scheduling, ensuring reminders work even after device reboots.
+> - **High-Priority Notifications**: Medicine reminders will use a dedicated notification channel with high priority.
+> - **Post-Notification Actions**: Support for "Taken", "Snooze", and "Skip" directly from the notification.
+> - **Database**: Initializing Room database in `:core:database` to persist medication schedules.
 
 ## Proposed Changes
 
-### Feature Reports (`:feature:reports`) [NEW MODULE]
+### Core Database (`:core:database`)
 
-#### [NEW] [Feature Reports Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports)
-- Create `:feature:reports` module using convention plugins.
+#### [NEW] [MedicineEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/MedicineEntity.kt)
+- Store medication name, dosage, frequency, times, and duration.
 
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain)
-- **MedicalReport** model: ID, Title, Category (Blood Test, MRI, etc.), Date, FileUrl, SyncStatus.
-- **Prescription** model: Extracted medicines, Dosage, Frequency, Doctor info.
-- UseCases: `UploadReportUseCase`, `ScanPrescriptionUseCase`, `GetReportTimelineUseCase`.
+#### [NEW] [MedicineDao.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/dao/MedicineDao.kt)
+- Standard CRUD operations for medications.
 
-#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/data)
-- `ReportRepository`: Local persistence for report metadata and integration with OCR/AI services.
+#### [NEW] [MediAIDatabase.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/MediAIDatabase.kt)
+- Room database initialization with Hilt provides.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation)
-- **ReportTimelineScreen**: Categorized list of all documents.
-- **CameraScanScreen**: CameraX implementation for document capture.
-- **ReportDetailScreen**: viewing the document and its AI-extracted summary.
+### Feature Reminder (`:feature:reminder`) [NEW MODULE]
 
-### AI Integration (`:core:ai`)
+#### [NEW] [Feature Reminder Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder)
+- Create `:feature:reminder` module using convention plugins.
 
-#### [NEW] [MedicalOcrAnalyzer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalOcrAnalyzer.kt)
-- Use ML Kit OCR to extract text from scanned images.
+#### [NEW] [MedicineReminderWorker.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder/src/main/kotlin/com/mediai/enterprise/feature/reminder/worker/MedicineReminderWorker.kt)
+- `CoroutineWorker` that triggers notifications based on scheduled times.
 
-#### [NEW] [MedicalAiParser.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalAiParser.kt)
-- Use Gemini SDK to transform raw OCR text into structured JSON models.
+#### [NEW] [ReminderScheduler.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder/src/main/kotlin/com/mediai/enterprise/feature/reminder/service/ReminderScheduler.kt)
+- Helper class to schedule/cancel `WorkManager` tasks for medications.
+
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder/src/main/kotlin/com/mediai/enterprise/feature/reminder/presentation)
+- **ReminderListScreen**: Daily timeline of medications.
+- **AddMedicineScreen**: Form to manually add or edit medication reminders.
+
+### Core Common (`:core:common`)
+
+#### [NEW] [NotificationHelper.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/common/src/main/kotlin/com/mediai/enterprise/core/common/NotificationHelper.kt)
+- Utility to manage notification channels and show alerts.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `REPORTS_TIMELINE_ROUTE`, `SCAN_ROUTE`, `REPORT_DETAIL_ROUTE`.
+- Add `REMINDERS_ROUTE`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Reports[:feature:reports] --> C_AI[:core:ai]
-    F_Reports --> C_UI[:core:ui]
+    F_Rem[:feature:reminder] --> C_DB[:core:database]
+    F_Rem --> C_Com[:core:common]
+    F_Rem --> WM[WorkManager]
 
-    subgraph Scanning Workflow
-        Scan[CameraX Scan] --> OCR[ML Kit OCR]
-        OCR --> Gemini[Gemini Parsing]
-        Gemini --> StructuredData[Structured Prescription]
+    subgraph Scheduling
+        Scheduler[ReminderScheduler] --> WM
+        WM --> Worker[MedicineReminderWorker]
+        Worker --> Notif[NotificationHelper]
     end
 
-    StructuredData --> DB[Local Database]
+    subgraph UI
+        List[ReminderListScreen]
+        Add[AddMedicineScreen]
+    end
+
+    List --> DB[Room Database]
+    Add --> Scheduler
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Mock Gemini responses and verify parsing logic in `MedicalAiParser`.
-- **Unit Tests**: Test `ReportTimeline` sorting and filtering logic.
+- **Database Tests**: Verify Room entity and DAO operations.
+- **Worker Tests**: Test `WorkManager` scheduling logic using `TestListenableWorkerBuilder`.
 
 ### Manual Verification
-- Test PDF/Image upload selection.
-- Verify CameraX document capture and OCR accuracy on real-world medical reports.
-- Check structured data extraction for a sample prescription image.
+- Schedule a reminder and verify the notification appears at the correct time.
+- Test "Snooze" and "Taken" actions from the notification.
+- Verify that reminders persist after an app restart.
