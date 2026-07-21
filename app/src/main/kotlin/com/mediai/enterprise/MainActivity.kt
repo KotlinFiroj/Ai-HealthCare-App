@@ -1,0 +1,43 @@
+package com.mediai.enterprise
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import dagger.hilt.android.AndroidEntryPoint
+
+/**
+ * [MainActivity]
+ * The entry point of the application.
+ * Uses Jetpack Compose for the UI.
+ */
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            // Placeholder theme until core:designsystem is implemented
+            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Greeting(
+                    name = "MediAI Enterprise",
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+    Text(
+        text = "Welcome to $name!",
+        modifier = modifier
+    )
+}
