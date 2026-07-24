@@ -21,8 +21,10 @@ import com.mediai.enterprise.core.designsystem.theme.MediAITheme
 import com.mediai.enterprise.core.navigation.MediAINavDestinations
 import com.mediai.enterprise.core.navigation.REMINDERS_ROUTE
 import com.mediai.enterprise.core.navigation.EMERGENCY_ROUTE
+import com.mediai.enterprise.core.navigation.HEALTH_TIMELINE_ROUTE
 import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
 import com.mediai.enterprise.feature.emergency.navigation.emergencyGraph
+import com.mediai.enterprise.feature.healthtimeline.navigation.healthTimelineGraph
 import com.mediai.enterprise.feature.auth.navigation.authGraph
 import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
@@ -75,6 +77,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToEmergency = {
                                 navController.navigate(EMERGENCY_ROUTE)
+                            },
+                            onNavigateToTimeline = {
+                                navController.navigate(HEALTH_TIMELINE_ROUTE)
                             }
                         )
 
@@ -85,6 +90,8 @@ class MainActivity : ComponentActivity() {
                         reminderGraph(navController)
 
                         emergencyGraph(navController)
+
+                        healthTimelineGraph(navController)
                     }
                 }
             }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.mediai.enterprise.core.database.MediAIDatabase
 import com.mediai.enterprise.core.database.dao.EmergencyDao
+import com.mediai.enterprise.core.database.dao.HealthDao
 import com.mediai.enterprise.core.database.dao.MedicineDao
 import dagger.Module
 import dagger.Provides
@@ -34,5 +35,10 @@ object DatabaseModule {
     @Provides
     fun provideEmergencyDao(database: MediAIDatabase): EmergencyDao {
         return database.emergencyDao()
+    }
+
+    @Provides
+    fun provideHealthDao(database: MediAIDatabase): HealthDao {
+        return database.healthDao()
     }
 }

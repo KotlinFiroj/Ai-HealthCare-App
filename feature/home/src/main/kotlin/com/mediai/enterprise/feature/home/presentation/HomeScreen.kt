@@ -24,6 +24,7 @@ fun HomeRoute(
     onNavigateToReports: () -> Unit,
     onNavigateToReminders: () -> Unit,
     onNavigateToEmergency: () -> Unit,
+    onNavigateToTimeline: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -32,7 +33,8 @@ fun HomeRoute(
         onNavigateToAppointments = onNavigateToAppointments,
         onNavigateToReports = onNavigateToReports,
         onNavigateToReminders = onNavigateToReminders,
-        onNavigateToEmergency = onNavigateToEmergency
+        onNavigateToEmergency = onNavigateToEmergency,
+        onNavigateToTimeline = onNavigateToTimeline
     )
 }
 
@@ -43,7 +45,8 @@ internal fun HomeScreen(
     onNavigateToAppointments: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToReminders: () -> Unit,
-    onNavigateToEmergency: () -> Unit
+    onNavigateToEmergency: () -> Unit,
+    onNavigateToTimeline: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -120,6 +123,17 @@ internal fun HomeScreen(
                             Icon(Icons.Default.MedicalInformation, contentDescription = null, tint = Color.White)
                             Spacer(Modifier.width(8.dp))
                             Text("Emergency Center (SOS)", color = Color.White)
+                        }
+                    }
+
+                    item {
+                        MediAIButton(
+                            onClick = onNavigateToTimeline,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(MediAIIcons.Dashboard, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Health Timeline")
                         }
                     }
 

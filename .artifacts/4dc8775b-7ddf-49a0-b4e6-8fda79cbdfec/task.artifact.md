@@ -1,19 +1,20 @@
-# Tasks - Phase 10: Emergency Module
+# Tasks - Phase 11: Health Timeline
 
-- `[x]` Update Dependencies in `libs.versions.toml` (Location & Google Play Services)
-- `[x]` Setup `:feature:emergency` Module
+- `[x]` Setup `:feature:healthtimeline` Module
 - `[x]` Implement `:core:database` Updates
-    - `[x]` `EmergencyContactEntity`
-    - `[x]` `MedicalProfileEntity`
-    - `[x]` Update `MediAIDatabase` and DAOs
-- `[x]` Implement Emergency Services
-    - `[x]` `LocationManager` (Fused Location)
-    - `[x]` `SosService` (SMS & Call Orchestration)
-- `[x]` Implement UI Layer
-    - `[x]` `EmergencyDashboardScreen` (SOS Button)
-    - `[x]` `MedicalIdScreen` (High-visibility ID card)
-    - `[ ]` `ContactListScreen` (Manage Emergency Contacts)
-    - `[x]` `EmergencyViewModel`
-- `[x]` Configure Navigation for Emergency
-- `[x]` Integrate SOS shortcut on Home Dashboard
-- `[ ]` Verify Permission Handling and SOS logic
+    - `[x]` `ReportEntity`
+    - `[x]` `AppointmentEntity`
+    - `[x]` `HealthDao`
+    - `[x]` Update `MediAIDatabase`
+- `[x]` Implement `:core:ai` Logic
+    - `[x]` `HealthTimelineSummarizer` (Gemini)
+- `[x]` Implement `:feature:healthtimeline` Domain Layer
+    - `[x]` `TimelineItem` model
+    - `[x]` `GetHealthTimelineUseCase`
+- `[x]` Implement `:feature:healthtimeline` UI Layer
+    - `[x]` `TimelineViewModel`
+    - `[x]` `HealthTimelineScreen`
+    - `[x]` `SummaryCard` component
+- `[x]` Configure Navigation for Health Timeline
+- `[x]` Integrate Timeline shortcut on Home Dashboard
+- `[ ]` Verify AI Summary and Data Merging
