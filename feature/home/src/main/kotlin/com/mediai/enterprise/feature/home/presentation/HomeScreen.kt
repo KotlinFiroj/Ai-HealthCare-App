@@ -19,11 +19,11 @@ import com.mediai.enterprise.feature.home.presentation.components.AiSuggestionCa
 import com.mediai.enterprise.feature.home.presentation.components.HealthScoreCard
 import com.mediai.enterprise.feature.home.presentation.components.MetricCard
 
-@Composable
 fun HomeRoute(
     onNavigateToAppointments: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToReminders: () -> Unit,
+    onNavigateToEmergency: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -31,7 +31,8 @@ fun HomeRoute(
         uiState = uiState,
         onNavigateToAppointments = onNavigateToAppointments,
         onNavigateToReports = onNavigateToReports,
-        onNavigateToReminders = onNavigateToReminders
+        onNavigateToReminders = onNavigateToReminders,
+        onNavigateToEmergency = onNavigateToEmergency
     )
 }
 
@@ -41,7 +42,8 @@ internal fun HomeScreen(
     uiState: HomeUiState,
     onNavigateToAppointments: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onNavigateToReminders: () -> Unit
+    onNavigateToReminders: () -> Unit,
+    onNavigateToEmergency: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -106,6 +108,18 @@ internal fun HomeScreen(
                             Icon(MediAIIcons.Notifications, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Medicine Reminders")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = onNavigateToEmergency,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        ) {
+                            Icon(Icons.Default.MedicalInformation, contentDescription = null, tint = Color.White)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Emergency Center (SOS)", color = Color.White)
                         }
                     }
 

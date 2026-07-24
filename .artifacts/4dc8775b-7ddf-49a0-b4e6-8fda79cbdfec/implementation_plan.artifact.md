@@ -1,85 +1,77 @@
-# Implementation Plan - Phase 9: Medicine Reminder & Smart Notifications
+# Implementation Plan - Phase 10: Emergency Module
 
-Implement an intelligent medication scheduling and reminder system that leverages extracted prescription data and utilizes **WorkManager** for reliable background notifications.
+Implement critical safety features including One-Tap SOS, GPS location sharing, Emergency Contacts, and a Medical ID card for **MediAI Enterprise**.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase involves background processing and system-level notifications.
+> This phase involves system-level permissions and safety-critical features.
 >
-> - **WorkManager**: We will use `WorkManager` for persistent scheduling, ensuring reminders work even after device reboots.
-> - **High-Priority Notifications**: Medicine reminders will use a dedicated notification channel with high priority.
-> - **Post-Notification Actions**: Support for "Taken", "Snooze", and "Skip" directly from the notification.
-> - **Database**: Initializing Room database in `:core:database` to persist medication schedules.
+> - **Permissions**: The app will request `ACCESS_FINE_LOCATION`, `SEND_SMS`, and `CALL_PHONE` permissions.
+> - **SOS Logic**: One-tap SOS will fetch current GPS coordinates and send an SMS with a Google Maps link to all emergency contacts.
+> - **Medical ID**: A quick-access screen displaying Blood Group, Allergies, and Chronic Conditions, accessible even from a "locked" state (simulated via high-priority notification or dashboard shortcut).
 
 ## Proposed Changes
 
 ### Core Database (`:core:database`)
 
-#### [NEW] [MedicineEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/MedicineEntity.kt)
-- Store medication name, dosage, frequency, times, and duration.
+#### [MODIFY] [MedicineDao.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/dao/MedicineDao.kt)
+- Add DAO methods for Emergency Contacts and Medical Profile.
 
-#### [NEW] [MedicineDao.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/dao/MedicineDao.kt)
-- Standard CRUD operations for medications.
+#### [NEW] [EmergencyContactEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/EmergencyContactEntity.kt)
+- Store name and phone number of emergency contacts.
 
-#### [NEW] [MediAIDatabase.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/MediAIDatabase.kt)
-- Room database initialization with Hilt provides.
+#### [NEW] [MedicalProfileEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/MedicalProfileEntity.kt)
+- Store Blood Group, Allergies, Medications, and Emergency Instructions.
 
-### Feature Reminder (`:feature:reminder`) [NEW MODULE]
+### Feature Emergency (`:feature:emergency`) [NEW MODULE]
 
-#### [NEW] [Feature Reminder Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder)
-- Create `:feature:reminder` module using convention plugins.
+#### [NEW] [Feature Emergency Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency)
+- Create `:feature:emergency` module using convention plugins.
 
-#### [NEW] [MedicineReminderWorker.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder/src/main/kotlin/com/mediai/enterprise/feature/reminder/worker/MedicineReminderWorker.kt)
-- `CoroutineWorker` that triggers notifications based on scheduled times.
+#### [NEW] [LocationManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/service/LocationManager.kt)
+- Use FusedLocationProviderClient to get high-accuracy coordinates.
 
-#### [NEW] [ReminderScheduler.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder/src/main/kotlin/com/mediai/enterprise/feature/reminder/service/ReminderScheduler.kt)
-- Helper class to schedule/cancel `WorkManager` tasks for medications.
+#### [NEW] [SosService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/service/SosService.kt)
+- Orchestrate the SOS flow: Get Location -> Send SMS -> Initiate Call.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reminder/src/main/kotlin/com/mediai/enterprise/feature/reminder/presentation)
-- **ReminderListScreen**: Daily timeline of medications.
-- **AddMedicineScreen**: Form to manually add or edit medication reminders.
-
-### Core Common (`:core:common`)
-
-#### [NEW] [NotificationHelper.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/common/src/main/kotlin/com/mediai/enterprise/core/common/NotificationHelper.kt)
-- Utility to manage notification channels and show alerts.
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/presentation)
+- **EmergencyDashboardScreen**: Large SOS button and quick links.
+- **MedicalIdScreen**: Visual card with critical health info.
+- **ContactListScreen**: Manage emergency contacts.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `REMINDERS_ROUTE`.
+- Add `EMERGENCY_ROUTE`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Rem[:feature:reminder] --> C_DB[:core:database]
-    F_Rem --> C_Com[:core:common]
-    F_Rem --> WM[WorkManager]
+    F_Emer[:feature:emergency] --> C_DB[:core:database]
+    F_Emer --> GPS[Google Play Services Location]
+    F_Emer --> SMS[Android Telephony Manager]
 
-    subgraph Scheduling
-        Scheduler[ReminderScheduler] --> WM
-        WM --> Worker[MedicineReminderWorker]
-        Worker --> Notif[NotificationHelper]
+    subgraph SOS Workflow
+        Button[SOS Button] --> Location[Get GPS]
+        Location --> SMS_Alert[Send SMS to Contacts]
+        SMS_Alert --> Call[Initiate Emergency Call]
     end
 
-    subgraph UI
-        List[ReminderListScreen]
-        Add[AddMedicineScreen]
+    subgraph Information
+        MedicalId[Medical ID Card] --> DB_Profile[Medical Profile Table]
+        Contacts[Emergency Contacts] --> DB_Contacts[Contacts Table]
     end
-
-    List --> DB[Room Database]
-    Add --> Scheduler
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Database Tests**: Verify Room entity and DAO operations.
-- **Worker Tests**: Test `WorkManager` scheduling logic using `TestListenableWorkerBuilder`.
+- **Unit Tests**: Verify SMS message formatting with location coordinates.
+- **Database Tests**: Verify CRUD for emergency contacts and medical profile.
 
 ### Manual Verification
-- Schedule a reminder and verify the notification appears at the correct time.
-- Test "Snooze" and "Taken" actions from the notification.
-- Verify that reminders persist after an app restart.
+- Trigger SOS and verify that location is fetched (mocked in emulator if necessary).
+- Verify the Medical ID card layout for readability in stressful situations.
+- Test permission handling (Allow/Deny scenarios).

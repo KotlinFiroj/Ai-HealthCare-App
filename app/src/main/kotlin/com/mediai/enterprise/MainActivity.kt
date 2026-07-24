@@ -20,7 +20,9 @@ import androidx.navigation.compose.rememberNavController
 import com.mediai.enterprise.core.designsystem.theme.MediAITheme
 import com.mediai.enterprise.core.navigation.MediAINavDestinations
 import com.mediai.enterprise.core.navigation.REMINDERS_ROUTE
+import com.mediai.enterprise.core.navigation.EMERGENCY_ROUTE
 import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
+import com.mediai.enterprise.feature.emergency.navigation.emergencyGraph
 import com.mediai.enterprise.feature.auth.navigation.authGraph
 import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
@@ -70,6 +72,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToReminders = {
                                 navController.navigate(REMINDERS_ROUTE)
+                            },
+                            onNavigateToEmergency = {
+                                navController.navigate(EMERGENCY_ROUTE)
                             }
                         )
 
@@ -78,6 +83,8 @@ class MainActivity : ComponentActivity() {
                         reportGraph(navController)
 
                         reminderGraph(navController)
+
+                        emergencyGraph(navController)
                     }
                 }
             }

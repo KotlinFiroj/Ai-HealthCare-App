@@ -1,19 +1,19 @@
-# Tasks - Phase 9: Medicine Reminder & Smart Notifications
+# Tasks - Phase 10: Emergency Module
 
-- `[x]` Implement `:core:database` Foundation
-    - `[x]` `MedicineEntity`
-    - `[x]` `MedicineDao`
-    - `[x]` `MediAIDatabase`
-- `[x]` Setup `:feature:reminder` Module
-- `[x]` Implement `:core:common` Utilities
-    - `[x]` `NotificationHelper`
-- `[x]` Implement Reminder Engine
-    - `[x]` `MedicineReminderWorker`
-    - `[x]` `ReminderScheduler`
+- `[x]` Update Dependencies in `libs.versions.toml` (Location & Google Play Services)
+- `[x]` Setup `:feature:emergency` Module
+- `[x]` Implement `:core:database` Updates
+    - `[x]` `EmergencyContactEntity`
+    - `[x]` `MedicalProfileEntity`
+    - `[x]` Update `MediAIDatabase` and DAOs
+- `[x]` Implement Emergency Services
+    - `[x]` `LocationManager` (Fused Location)
+    - `[x]` `SosService` (SMS & Call Orchestration)
 - `[x]` Implement UI Layer
-    - `[x]` `ReminderListScreen`
-    - `[ ]` `AddMedicineScreen`
-    - `[x]` `ReminderViewModel`
-- `[x]` Configure Navigation for Reminders
-- `[x]` Integrate with Home Dashboard
-- `[ ]` Verify Notification and Background Scheduling
+    - `[x]` `EmergencyDashboardScreen` (SOS Button)
+    - `[x]` `MedicalIdScreen` (High-visibility ID card)
+    - `[ ]` `ContactListScreen` (Manage Emergency Contacts)
+    - `[x]` `EmergencyViewModel`
+- `[x]` Configure Navigation for Emergency
+- `[x]` Integrate SOS shortcut on Home Dashboard
+- `[ ]` Verify Permission Handling and SOS logic
