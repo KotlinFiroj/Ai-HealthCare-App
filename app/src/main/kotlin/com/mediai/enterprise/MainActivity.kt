@@ -22,9 +22,11 @@ import com.mediai.enterprise.core.navigation.MediAINavDestinations
 import com.mediai.enterprise.core.navigation.REMINDERS_ROUTE
 import com.mediai.enterprise.core.navigation.EMERGENCY_ROUTE
 import com.mediai.enterprise.core.navigation.HEALTH_TIMELINE_ROUTE
+import com.mediai.enterprise.core.navigation.CHAT_ROUTE
 import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
 import com.mediai.enterprise.feature.emergency.navigation.emergencyGraph
 import com.mediai.enterprise.feature.healthtimeline.navigation.healthTimelineGraph
+import com.mediai.enterprise.feature.chatbot.navigation.chatGraph
 import com.mediai.enterprise.feature.auth.navigation.authGraph
 import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
@@ -80,6 +82,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToTimeline = {
                                 navController.navigate(HEALTH_TIMELINE_ROUTE)
+                            },
+                            onNavigateToChat = {
+                                navController.navigate(CHAT_ROUTE)
                             }
                         )
 
@@ -92,6 +97,8 @@ class MainActivity : ComponentActivity() {
                         emergencyGraph(navController)
 
                         healthTimelineGraph(navController)
+
+                        chatGraph(navController)
                     }
                 }
             }

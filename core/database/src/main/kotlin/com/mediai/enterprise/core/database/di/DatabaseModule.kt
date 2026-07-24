@@ -3,6 +3,7 @@ package com.mediai.enterprise.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.mediai.enterprise.core.database.MediAIDatabase
+import com.mediai.enterprise.core.database.dao.ChatDao
 import com.mediai.enterprise.core.database.dao.EmergencyDao
 import com.mediai.enterprise.core.database.dao.HealthDao
 import com.mediai.enterprise.core.database.dao.MedicineDao
@@ -40,5 +41,10 @@ object DatabaseModule {
     @Provides
     fun provideHealthDao(database: MediAIDatabase): HealthDao {
         return database.healthDao()
+    }
+
+    @Provides
+    fun provideChatDao(database: MediAIDatabase): ChatDao {
+        return database.chatDao()
     }
 }

@@ -1,79 +1,71 @@
-# Implementation Plan - Phase 11: Health Timeline
+# Implementation Plan - Phase 12: AI Medical Chatbot (RAG)
 
-Consolidate all medical records, appointments, and medication history into a unified, chronological, and AI-summarized view for **MediAI Enterprise**.
+Implement an enterprise-grade medical assistant using **Retrieval-Augmented Generation (RAG)** to provide accurate, context-aware answers based on medical knowledge bases.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase transitions the app from isolated features to an integrated health ecosystem.
+> This phase introduces conversational AI with local context injection.
 >
-> - **Data Consolidation**: We will aggregate data from three different sources: Medical Reports, Doctor Appointments, and Medication History.
-> - **AI Summarization**: Using Gemini to provide a high-level "Health Narrative" based on the chronological events.
-> - **Database Expansion**: Moving `Reports` and `Appointments` from mock data to Room entities in `:core:database`.
+> - **RAG Architecture**: We will simulate a Retrieval-Augmented Generation flow by injecting relevant "Knowledge Base" snippets (WHO guidelines, hospital policies) into the Gemini prompt based on user query keywords.
+> - **Privacy & Safety**: Every response will include a mandatory medical disclaimer.
+> - **Conversation Memory**: The chatbot will maintain context within a session but will also support persistence in Room for historical review.
 
 ## Proposed Changes
 
+### Feature Chatbot (`:feature:chatbot`) [NEW MODULE]
+
+#### [NEW] [Feature Chatbot Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot)
+- Create `:feature:chatbot` module using convention plugins.
+
+#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/domain)
+- **ChatMessage** model: ID, Content, Role (User/Assistant), Timestamp.
+- **SendMessageUseCase**: Orchestrates retrieval and LLM calling.
+
+#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/data)
+- **KnowledgeBaseProvider**: A repository of medical facts and hospital policies used for context injection.
+- **ChatRepository**: Manages chat history in Room and communicates with Gemini.
+
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/presentation)
+- **ChatScreen**: A fluid message-based UI with typing indicators and quick-reply suggestions.
+- **ChatViewModel**: Handles the UDF (Unidirectional Data Flow) for the conversation.
+
 ### Core Database (`:core:database`)
 
-#### [NEW] [ReportEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/ReportEntity.kt)
-- Persist medical report metadata (title, category, date, file path, AI summary).
-
-#### [NEW] [AppointmentEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/AppointmentEntity.kt)
-- Persist appointment details (doctor name, date, type, status).
-
-#### [NEW] [HealthDao.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/dao/HealthDao.kt)
-- Combined DAO for fetching various health events ordered by date.
-
-### Core AI (`:core:ai`)
-
-#### [NEW] [HealthTimelineSummarizer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/HealthTimelineSummarizer.kt)
-- Gemini-powered service to analyze a list of health events and generate a concise summary of the user's recent medical history.
-
-### Feature Health Timeline (`:feature:healthtimeline`) [NEW MODULE]
-
-#### [NEW] [Feature Timeline Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/healthtimeline)
-- Create `:feature:healthtimeline` module.
-
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/healthtimeline/src/main/kotlin/com/mediai/enterprise/feature/healthtimeline/domain)
-- **TimelineItem** model: A sealed class representing different types of events (Report, Appointment, Medication).
-- **GetHealthTimelineUseCase**: Business logic for merging and sorting data from multiple repositories.
-
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/healthtimeline/src/main/kotlin/com/mediai/enterprise/feature/healthtimeline/presentation)
-- **HealthTimelineScreen**: A vertical timeline UI with sticky headers for months/years.
-- **SummaryCard**: A prominent section at the top showing the Gemini-generated overview.
+#### [NEW] [ChatMessageEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/ChatMessageEntity.kt)
+- Persist chat messages for session recovery and history.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `HEALTH_TIMELINE_ROUTE`.
+- Add `CHAT_ROUTE`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Timeline[:feature:healthtimeline] --> C_Domain[:core:domain]
-    F_Timeline --> C_AI[:core:ai]
-    F_Timeline --> C_DB[:core:database]
+    F_Chat[:feature:chatbot] --> C_AI[:core:ai]
+    F_Chat --> C_DB[:core:database]
 
-    subgraph Data Flow
-        DB_Reports[(Reports Table)] --> Repo[TimelineRepository]
-        DB_Appts[(Appts Table)] --> Repo
-        DB_Meds[(Medicines Table)] --> Repo
-        Repo --> UseCase[GetHealthTimelineUseCase]
-        UseCase --> VM[TimelineViewModel]
+    subgraph RAG Pipeline
+        UserQuery[User Query] --> Retriever[Knowledge Retriever]
+        Retriever --> Context[Relevant Med Context]
+        Context --> Prompt[Prompt Builder]
+        UserQuery --> Prompt
+        Prompt --> Gemini[Gemini 1.5 Flash]
+        Gemini --> Response[AI Response with Disclaimer]
     end
 
-    VM --> Gemini[Gemini Summarizer]
-    Gemini --> UI[Timeline UI]
+    Response --> History[Chat History Table]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify the merging and sorting logic in `GetHealthTimelineUseCase`.
-- **Database Tests**: Verify queries for `ReportEntity` and `AppointmentEntity`.
+- **Unit Tests**: Verify the context injection logic (ensure correct knowledge snippets are selected for specific keywords).
+- **ViewModel Tests**: Verify message list updates and loading states.
 
 ### Manual Verification
-- Add a report and an appointment, then check if they appear correctly in the timeline.
-- Trigger the AI summary and verify it accurately reflects the events on the screen.
-- Verify the scrolling performance with a large number of timeline items.
+- Ask the chatbot about "Hospital Visiting Hours" (Policy retrieval).
+- Ask about "Diabetes symptoms" (Medical knowledge retrieval).
+- Verify that the medical disclaimer is present in every AI response.

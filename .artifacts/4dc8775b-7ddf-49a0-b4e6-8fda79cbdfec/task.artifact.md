@@ -1,20 +1,20 @@
-# Tasks - Phase 11: Health Timeline
+# Tasks - Phase 12: AI Medical Chatbot (RAG)
 
-- `[x]` Setup `:feature:healthtimeline` Module
+- `[x]` Setup `:feature:chatbot` Module
 - `[x]` Implement `:core:database` Updates
-    - `[x]` `ReportEntity`
-    - `[x]` `AppointmentEntity`
-    - `[x]` `HealthDao`
+    - `[x]` `ChatMessageEntity`
+    - `[x]` `ChatDao`
     - `[x]` Update `MediAIDatabase`
-- `[x]` Implement `:core:ai` Logic
-    - `[x]` `HealthTimelineSummarizer` (Gemini)
-- `[x]` Implement `:feature:healthtimeline` Domain Layer
-    - `[x]` `TimelineItem` model
-    - `[x]` `GetHealthTimelineUseCase`
-- `[x]` Implement `:feature:healthtimeline` UI Layer
-    - `[x]` `TimelineViewModel`
-    - `[x]` `HealthTimelineScreen`
-    - `[x]` `SummaryCard` component
-- `[x]` Configure Navigation for Health Timeline
-- `[x]` Integrate Timeline shortcut on Home Dashboard
-- `[ ]` Verify AI Summary and Data Merging
+- `[x]` Implement RAG Knowledge Base
+    - `[x]` `MedicalKnowledgeProvider` (Context Retrieval)
+- `[x]` Implement `:feature:chatbot` Domain Layer
+    - `[x]` `ChatMessage` model
+    - `[x]` `SendMessageUseCase`
+- `[x]` Implement `:feature:chatbot` Data Layer
+    - `[x]` `ChatRepository`
+- `[x]` Implement `:feature:chatbot` UI Layer
+    - `[x]` `ChatViewModel`
+    - `[x]` `ChatScreen` (Message bubbles, Input field)
+- `[x]` Configure Navigation for Chatbot
+- `[x]` Integrate Chatbot shortcut on Home Dashboard
+- `[ ]` Verify RAG Context Injection and AI Responses

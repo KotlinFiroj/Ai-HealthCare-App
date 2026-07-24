@@ -1,36 +1,39 @@
-# Walkthrough - Phase 11: Health Timeline
+# Walkthrough - Phase 12: AI Medical Chatbot (RAG)
 
-We have successfully implemented the **Health Timeline**, a unified chronological view of the user's medical journey, enhanced with AI-generated health narratives.
+We have successfully implemented the **AI Medical Chatbot** using **Retrieval-Augmented Generation (RAG)** to provide grounded and context-aware medical assistance.
 
 ## Changes Made
 
-### 1. New Feature Module: `:feature:healthtimeline`
-- Created the `:feature:healthtimeline` module following Clean Architecture.
-- Implemented a unified **TimelineItem** sealed class to represent Reports, Appointments, and Medications.
+### 1. New Feature Module: `:feature:chatbot`
+- Created the `:feature:chatbot` module with a full Clean Architecture implementation (Domain, Data, Presentation).
+- Integrated with the **Gemini 1.5 Flash** model for high-speed, intelligent conversations.
 
-### 2. Database Evolution (`:core:database`)
-- **Persistent Entities**: Transitioned from mock data to Room persistence for [ReportEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/ReportEntity.kt) and [AppointmentEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/AppointmentEntity.kt).
-- **Health DAO**: Created a specialized [HealthDao.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/dao/HealthDao.kt) to manage medical records and scheduled visits.
+### 2. RAG Pipeline Implementation
+- **Context Retrieval**: Implemented [MedicalKnowledgeProvider.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/data/knowledge/MedicalKnowledgeProvider.kt), which acts as a local knowledge base. It retrieves relevant snippets (WHO guidelines, hospital hours, etc.) based on keywords in the user's message.
+- **Grounded Prompts**: The chat repository now injects these knowledge snippets into the system prompt, ensuring the AI's answers are grounded in authoritative data.
 
-### 3. AI Health Narrative (`:core:ai`)
-- **Gemini Integration**: Implemented [HealthTimelineSummarizer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/HealthTimelineSummarizer.kt), which analyzes the user's chronological health events and generates a professional summary using **Gemini 1.5 Flash**.
+### 3. Persistent Chat History (`:core:database`)
+- **ChatMessageEntity**: Added a new table to store chat history, allowing users to return to previous conversations.
+- **UDF State Management**: The UI is reactively updated from the database using Kotlin Flow, ensuring a smooth conversational experience.
 
-### 4. Unified Timeline UI
-- **Health Timeline Screen**: Developed a modern [HealthTimelineScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/healthtimeline/src/main/kotlin/com/mediai/enterprise/feature/healthtimeline/presentation/timeline/HealthTimelineScreen.kt) that aggregates data from multiple sources into a single scrollable list.
-- **Summary Section**: Created [SummaryCard.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/healthtimeline/src/main/kotlin/com/mediai/enterprise/feature/healthtimeline/presentation/components/SummaryCard.kt) to display real-time AI insights at the top of the timeline.
+### 4. Modern Chat UI
+- **Message Bubbles**: Developed a fluid, Material 3-styled chat interface in [ChatScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/presentation/chat/ChatScreen.kt) with distinct styles for User and AI messages.
+- **Typing Indicators**: Added a "MediAI is typing..." indicator to improve the UX during AI generation.
+- **History Management**: Integrated a "Clear Chat" feature to allow users to reset their conversation history.
 
 ## Architecture Highlights
-- **Reactive Aggregation**: The timeline uses `Flow.combine` to listen to updates from three different database tables simultaneously, ensuring the UI is always in sync with the latest health data.
-- **Context-Aware AI**: The summarizer is fed specific event metadata to ensure the "Health Narrative" is accurate and clinically relevant.
+- **Grounded AI**: By using RAG, we minimize hallucinations and ensure the AI prioritizes real hospital policies and medical facts.
+- **Safety by Design**: Every AI response is automatically prefixed with a mandatory medical disclaimer and includes logic to redirect emergencies to the SOS button.
 
 ## Verification Results
 
-### Data Integration
-- Verified that adding a new medical report or booking an appointment automatically updates the timeline view.
-- Confirmed that the sorting logic correctly places the most recent events at the top.
+### Conversational Flow
+- Verified that asking "What are the visiting hours?" triggers the retrieval of hospital policy context.
+- Confirmed that chat messages are correctly persisted in Room and restored on app restart.
+- Verified that the UI automatically scrolls to the latest message.
 
-> [!TIP]
-> The timeline is the "Memory" of the application. As users add more data through OCR and appointments, the AI summary will become increasingly personalized and insightful.
+> [!IMPORTANT]
+> The chatbot requires an active internet connection to communicate with the Gemini API. Ensure your `local.properties` or `AiModule.kt` contains a valid API key.
 
 ## Next Steps
-In **Phase 12: AI Medical Chatbot (RAG)**, we will implement an enterprise-grade medical assistant that uses Retrieval-Augmented Generation (RAG) to answer user queries based on hospital guidelines and medical knowledge bases.
+In **Phase 13: AI Report Summarization**, we will build a specialized tool to analyze complex medical PDFs and images (MRI, Blood Tests) to provide patient-friendly summaries.
