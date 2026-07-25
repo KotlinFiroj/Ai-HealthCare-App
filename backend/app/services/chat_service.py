@@ -2,9 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.chat import ChatMessage
 from app.services.rag_service import rag_service
-from app.core.ai_engine import ai_engine
+from app.core.agents.medical_agents import MediAiOrchestrator
 from uuid import UUID
 from typing import List
+
+# Shared instance of the orchestrator
+orchestrator = MediAiOrchestrator()
 
 class ChatService:
     @staticmethod
@@ -22,27 +25,19 @@ class ChatService:
         user_msg = ChatMessage(user_id=user_id, role="user", content=content)
         db.add(user_msg)
 
-        # 2. Retrieve Context (RAG)
+        # 2. Retrieve Context (RAG) for the Orchestrator to see
         context = rag_service.retrieve_context(content)
 
-        # 3. Augment Prompt & Generate Response
-        # We reuse the analyze_medical_text logic but adapted for chat
-        augmented_prompt = f"""
-        You are an expert MediAI Assistant.
-        Use the following retrieved context to answer the user's question accurately.
-        If the answer isn't in the context, use your general knowledge but mention it's not from the official database.
-
-        Context:
-        {context}
-
-        User Question: {content}
+        # 3. Augmented Request for Agent
+        agent_query = f"""
+        User Message: {content}
+        Relevant Knowledge Context: {context}
         """
 
-        # Call AI Engine
-        response = await ai_engine.analyze_medical_text(augmented_prompt, "Chat")
-        assistant_content = response.get("summary", "I'm sorry, I couldn't process your request.")
+        # 4. Execute Agent Flow (Autonomous Tool Selection)
+        assistant_content = await orchestrator.execute(agent_query)
 
-        # 4. Save Assistant Message
+        # 5. Save Assistant Message
         assistant_msg = ChatMessage(user_id=user_id, role="assistant", content=assistant_content)
         db.add(assistant_msg)
 

@@ -1,18 +1,20 @@
-# Tasks - Phase 26: Analytics, Notifications & Admin Services
+# Tasks - Phase 27: specialized AI Agents & Evaluation Pipeline
 
-- `[x]` Update User Model
-    - `[x]` Add `is_admin` and `fcm_token` to `User` model in `user.py`
-- `[x]` Define API Schemas
-    - `[x]` `analytics.py`
-    - `[x]` `notification.py`
-- `[x]` Implement Service Layer
-    - `[x]` `analytics_service.py`
-    - `[x]` `notification_service.py` (FCM Integration)
-    - `[x]` `medicine_service.py`
-- `[x]` Implement API Endpoints
-    - `[x]` `analytics.py` (GET /stats)
-    - `[x]` `admin.py` (Doctor & Knowledge management)
-- `[x]` Register Routers in `main.py`
-- `[x]` Implement Background Notification Task
-    - `[x]` Add `send_push_notification_task` to Celery
-- `[ ]` Verify Admin Access and Analytics Aggregation
+- `[x]` Setup Agentic Framework Structure
+    - `[x]` Create `backend/app/core/agents`
+    - `[x]` Create `backend/app/core/tools`
+    - `[x]` Create `backend/app/core/eval`
+- `[x]` Implement Base Agent Logic
+    - `[x]` `base_agent.py` (Memory & Tool management)
+- `[x]` Implement Backend Tools (Function Calling)
+    - `[x]` `medical_tools.py` (Booking, Vitals, Reports)
+- `[x]` Implement Specialized Agents
+    - `[x]` `AppointmentAgent`
+    - `[x]` `DiagnosticAgent`
+    - `[x]` `ReportAgent`
+- `[x]` Implement Orchestration Agent
+    - `[x]` `MediAiOrchestrator`
+- `[x]` Update Chat Service to use Agent Flow
+- `[x]` Implement AI Evaluation Pipeline
+    - `[x]` `evaluator.py` (Scoring and Ground Truth)
+- `[ ]` Verify Agent Autonomy and Function Calling
