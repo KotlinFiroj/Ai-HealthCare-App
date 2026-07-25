@@ -1,34 +1,40 @@
-# Walkthrough - Phase 22: Authentication Service & JWT
+# Walkthrough - Phase 23: Patient & Doctor Services
 
-We have successfully implemented the core authentication and security layer for the **MediAI Enterprise** backend. This system provides a robust foundation for user identity and secure access to healthcare data.
+We have successfully implemented the core healthcare business services for the **MediAI Enterprise** backend. This phase establishes the data flow for patient profiles, doctor discovery, and the appointment booking lifecycle.
 
 ## Changes Made
 
-### 1. Security Core (`:core:security`)
-- **Bcrypt Hashing**: Implemented [security.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/security.py) using the `passlib` library to handle industry-standard password hashing and verification.
-- **JWT Generation**: Developed a utility to create signed **JSON Web Tokens (JWT)** with a configurable expiration time, ensuring stateless and secure session management.
+### 1. Healthcare Data Schemas (`:schemas`)
+- **Patient Profiles**: Defined [patient.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/patient.py) to handle clinical metadata like blood group and allergies.
+- **Doctor Directory**: Created [doctor.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/doctor.py) for managing physician professional details and specializations.
+- **Appointments**: Implemented [appointment.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/appointment.py) to define the structure for medical booking requests and responses.
 
-### 2. Standardized API Schemas (`:schemas`)
-- Created [user.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/user.py) which defines Pydantic models for user registration, responses, and token data. These schemas ensure strict data validation and type safety for all authentication requests.
+### 2. Service Layer Implementation (`:services`)
+- **Encapsulated Logic**: Introduced a dedicated service layer to keep API endpoints lean and reusable.
+- **Patient Service**: Handles profile creation and updates, ensuring strict ownership by the authenticated user.
+- **Doctor Service**: Provides advanced search capabilities with support for partial name matching and specialized filtering.
+- **Appointment Service**: Manages the booking process and retrieves historical/upcoming appointments for the user.
 
-### 3. Identity Endpoints (`:api:v1:endpoints:auth`)
-- **User Registration**: Implemented `POST /register` to securely create new users, ensuring no duplicate emails exist in the system.
-- **OAuth2 Login**: Developed `POST /login`, which is fully compatible with FastAPI's OAuth2 implementation. It verifies credentials and issues a JWT access token to the mobile client.
+### 3. API Endpoints (`:api:v1:endpoints`)
+- **Patient Profile**: Implemented `GET/POST/PUT /patients/me/profile` for personal health record management.
+- **Doctor Discovery**: Developed `GET /doctors/` for searchable access to the healthcare provider network.
+- **Booking Hub**: Created `POST/GET /appointments/` to facilitate the orchestration of medical consultations.
 
-### 4. Route Protection (`:api:deps`)
-- **Current User Dependency**: Implemented `get_current_user` in [deps.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/deps.py). This reusable dependency can be injected into any endpoint to ensure only authenticated users with valid tokens can access sensitive health information.
+### 4. Application Integration
+- **Router Registration**: Updated the main [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py) to include the new healthcare service routers, making them accessible via the standard `/api/v1` prefix.
 
 ## Architecture Highlights
-- **Stateless Security**: By using JWT, the backend doesn't need to store session state in memory, allowing it to scale horizontally across multiple containers.
-- **Separation of Concerns**: Security logic is isolated from the API endpoints, making the codebase easier to audit and maintain.
+- **Service Layer Pattern**: By isolating business logic into services, we've made the backend more testable and maintained a clean separation from the transport (API) layer.
+- **Security-First Data Access**: Every patient and appointment endpoint utilizes the `get_current_user` dependency, ensuring that sensitive medical data is only accessible to its rightful owner.
 
 ## Verification Results
 
-### API Integrity
-- The `auth` router has been successfully integrated into the main [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py) and is visible in the Swagger UI.
+### API Interface
+- Verified that all new routes are correctly mapped and documented in the automatically generated Swagger UI.
+- Confirmed that the `PatientProfileUpdate` schema correctly supports partial updates (patch-like behavior).
 
-> [!IMPORTANT]
-> All subsequent feature development (Reports, Appointments, Vitals) will now utilize the `get_current_user` dependency to ensure HIPAA-compliant data access control.
+> [!TIP]
+> The doctor search service uses Case-Insensitive ILIKE queries in PostgreSQL, ensuring a user-friendly search experience on the mobile app.
 
 ## Next Steps
-In **Phase 23: Patient & Doctor Services**, we will implement the CRUD operations for patient profiles and the searchable doctor directory, utilizing the security layer we built today.
+In **Phase 24: OCR & AI Services**, we will implement the background workers (Celery) to handle heavy-duty medical document processing and integrate the Gemini-powered interpretation engine.

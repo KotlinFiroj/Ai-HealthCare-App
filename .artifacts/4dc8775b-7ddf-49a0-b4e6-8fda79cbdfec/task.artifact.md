@@ -1,15 +1,16 @@
-# Tasks - Phase 22: Authentication Service & JWT
+# Tasks - Phase 23: Patient & Doctor Services
 
-- `[x]` Implement Security Utilities
-    - `[x]` `get_password_hash` & `verify_password`
-    - `[x]` `create_access_token`
 - `[x]` Define API Schemas
-    - `[x]` `UserCreate`, `UserResponse`
-    - `[x]` `Token`, `TokenData`
+    - `[x]` `patient.py` (Profile schemas)
+    - `[x]` `doctor.py` (Doctor schemas)
+    - `[x]` `appointment.py` (Booking schemas)
+- `[x]` Implement Service Layer
+    - `[x]` `patient_service.py`
+    - `[x]` `doctor_service.py`
+    - `[x]` `appointment_service.py`
 - `[x]` Implement API Endpoints
-    - `[x]` `POST /register`
-    - `[x]` `POST /login` (OAuth2 token)
-- `[x]` Implement Auth Dependencies
-    - `[x]` `get_current_user`
-- `[x]` Register Auth Router in `main.py`
-- `[ ]` Verify Auth Flow with Swagger UI
+    - `[x]` `patients.py` (Profile CRUD)
+    - `[x]` `doctors.py` (Search and detail)
+    - `[x]` `appointments.py` (Booking lifecycle)
+- `[x]` Register Routers in `main.py`
+- `[ ]` Verify Service Logic with Swagger UI

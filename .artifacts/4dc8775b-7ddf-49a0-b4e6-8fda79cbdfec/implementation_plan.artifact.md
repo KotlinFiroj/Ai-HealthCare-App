@@ -1,77 +1,87 @@
-# Implementation Plan - Phase 22: Authentication Service & JWT
+# Implementation Plan - Phase 23: Patient & Doctor Services
 
-Implement a secure, production-ready authentication system for the **MediAI Enterprise** backend, providing the foundation for user identity and secure data access.
+Implement the core healthcare management services for **MediAI Enterprise**, enabling patient profile management, doctor discovery, and appointment orchestration.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase establishes the security perimeter of the backend.
+> This phase implements the primary business logic for the healthcare platform.
 >
-> - **Security Standards**: We will use **OAuth2 with Password Flow** and **JWT (JSON Web Tokens)** for stateless authentication.
-> - **Password Safety**: Passwords will be hashed using **Bcrypt** with a salt before storage.
-> - **Stateless Session**: All sensitive health APIs will require a valid JWT token in the `Authorization: Bearer` header.
+> - **Data Ownership**: Patient profiles are strictly linked to the authenticated user. A user can only view/edit their own medical profile.
+> - **Search Performance**: Doctor search will support partial name matching and specialization filtering.
+> - **Appointment Logic**: Booking an appointment will verify the doctor's existence and store the scheduled time. (Advanced availability logic will be added in future AI phases).
 
 ## Proposed Changes
 
-### Security Utilities (`backend/app/core`)
-
-#### [NEW] [security.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/security.py)
-- Implement `get_password_hash` and `verify_password` using `passlib`.
-- Implement `create_access_token` using `python-jose` for JWT generation.
-
 ### API Schemas (`backend/app/schemas`)
 
-#### [NEW] [user.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/user.py)
-- Define `UserCreate`, `UserUpdate`, and `UserResponse` Pydantic models.
-- Define `Token` and `TokenData` models.
+#### [NEW] [patient.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/patient.py)
+- `PatientProfileCreate`, `PatientProfileUpdate`, `PatientProfileResponse`.
+
+#### [NEW] [doctor.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/doctor.py)
+- `DoctorCreate`, `DoctorResponse`.
+
+#### [NEW] [appointment.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/appointment.py)
+- `AppointmentCreate`, `AppointmentUpdate`, `AppointmentResponse`.
+
+### Service Layer (`backend/app/services`)
+
+#### [NEW] [patient_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/patient_service.py)
+- Business logic for managing patient profiles and medical metadata.
+
+#### [NEW] [doctor_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/doctor_service.py)
+- Logic for searching and filtering the doctor directory.
+
+#### [NEW] [appointment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/appointment_service.py)
+- Logic for booking and retrieving appointments.
 
 ### API Endpoints (`backend/app/api/v1/endpoints`)
 
-#### [NEW] [auth.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/auth.py)
-- **POST /register**: Create a new user and return user data.
-- **POST /login**: Authenticate user and return an Access Token.
+#### [NEW] [patients.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/patients.py)
+- `GET /me/profile`: Fetch current user's profile.
+- `PUT /me/profile`: Update medical details.
 
-### Middleware & Dependencies (`backend/app/api`)
+#### [NEW] [doctors.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/doctors.py)
+- `GET /`: List and search doctors.
+- `GET /{id}`: Fetch doctor details.
 
-#### [NEW] [deps.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/deps.py)
-- Implement `get_current_user`: A FastAPI dependency that extracts and validates the JWT token, returning the authenticated `User` model.
+#### [NEW] [appointments.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/appointments.py)
+- `POST /`: Book a new appointment.
+- `GET /`: List user's appointments.
 
 ### Main App Updates
 
 #### [MODIFY] [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py)
-- Include the `auth` router in the FastAPI application.
+- Register `patients`, `doctors`, and `appointments` routers.
 
-## Authentication Sequence
+## Architecture Diagram
 
 ```mermaid
-sequenceDiagram
-    participant User as Mobile App
-    participant API as FastAPI Backend
-    participant DB as PostgreSQL
+graph TD
+    User([Authenticated User]) --> API
 
-    User->>API: POST /register (Email, Pass)
-    API->>API: Hash Password
-    API->>DB: Save User
-    API-->>User: User Created
+    subgraph API Endpoints
+        P[Patient API]
+        D[Doctor API]
+        A[Appointment API]
+    end
 
-    User->>API: POST /login (Email, Pass)
-    API->>DB: Fetch User
-    API->>API: Verify Hash
-    API->>API: Generate JWT
-    API-->>User: Return Token
+    P --> PS[Patient Service]
+    D --> DS[Doctor Service]
+    A --> AS[Appointment Service]
 
-    User->>API: GET /me (Bearer Token)
-    API->>API: Validate JWT
-    API-->>User: User Profile Data
+    PS --> DB[(PostgreSQL)]
+    DS --> DB
+    AS --> DB
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify hashing and password verification.
-- **Integration Tests**: Test the full registration and login flow using a test database.
+- **Unit Tests**: Verify that `PatientProfileUpdate` correctly updates fields in the database.
+- **Integration Tests**: Verify that searching for "Cardiologist" returns the correct doctors.
 
 ### Manual Verification
-- Use the Swagger UI (`/docs`) to register a test user.
-- Log in and verify that a valid JWT token is returned.
-- Test a protected endpoint with the received token.
+- Create a patient profile via Swagger.
+- Search for doctors by specialization.
+- Book an appointment and verify it appears in the user's appointment list.
