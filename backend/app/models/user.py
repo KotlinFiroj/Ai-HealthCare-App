@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.models.base import Base
 
@@ -7,6 +7,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     full_name = Column(String)
     phone_number = Column(String)
+    is_admin = Column(Boolean, default=False)
+    fcm_token = Column(String, nullable=True)
 
     profile = relationship("PatientProfile", back_populates="user", uselist=False)
     appointments = relationship("Appointment", back_populates="user")

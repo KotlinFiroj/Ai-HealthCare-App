@@ -1,74 +1,76 @@
-# Implementation Plan - Phase 25: RAG Pipeline with ChromaDB
+# Implementation Plan - Phase 26: Analytics, Notifications & Admin Services
 
-Implement a sophisticated **Retrieval-Augmented Generation (RAG)** pipeline using **ChromaDB** and **Gemini 1.5** to ground the AI Medical Chatbot in authoritative medical knowledge.
+Complete the feature set of the **MediAI Enterprise** backend by implementing long-term analytics, push notifications, and administrative controls.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase implements the "Brain" of the enterprise medical assistant.
+> This phase rounds out the backend functionality to support the full mobile experience.
 >
-> - **Vector Database**: We will use **ChromaDB** for high-performance semantic search.
-> - **Embeddings**: We will use Gemini's embedding model to transform medical text into vectors.
-> - **Knowledge Base**: We will initialize the system with WHO guidelines and hospital policy snippets.
-> - **Citations**: The AI will be instructed to cite its sources from the retrieved context.
+> - **Analytics Engine**: We will implement complex SQL aggregations to calculate "Health Scores" and "Adherence Trends".
+> - **FCM Integration**: The Notification Service will be the central hub for sending push alerts (Medicine reminders, Appointment confirmations).
+> - **Admin Access**: We will introduce a `role` field to the `User` model to distinguish between Patients and Administrators.
 
 ## Proposed Changes
 
-### Data Modeling (`backend/app/models`)
+### API Schemas (`backend/app/schemas`)
 
-#### [NEW] [chat.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/chat.py)
-- `ChatMessage` model: Store conversation history (user_id, role, content, timestamp).
+#### [NEW] [analytics.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/analytics.py)
+- `HealthSummary`, `TrendData`, `AdherenceScore`.
 
-### Vector Store Core (`backend/app/core`)
+#### [NEW] [notification.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/notification.py)
+- `PushNotification`, `NotificationLog`.
 
-#### [NEW] [chroma_db.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/chroma_db.py)
-- Initialize the ChromaDB HTTP client and define collection management.
+### Service Layer (`backend/app/services`)
 
-### RAG Service Layer (`backend/app/services`)
+#### [NEW] [analytics_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/analytics_service.py)
+- Logic to compute weekly/monthly vitals trends and AI-driven health scores.
 
-#### [NEW] [rag_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/rag_service.py)
-- **Ingestion**: Logic to chunk and embed documents into ChromaDB.
-- **Retrieval**: Perform semantic search to find top-K relevant contexts for a user query.
-- **Initialization**: Method to seed the knowledge base with initial data.
+#### [NEW] [notification_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/notification_service.py)
+- Integration with **Firebase Cloud Messaging (FCM)**.
+- Method to queue notifications for async delivery via Celery.
 
-#### [NEW] [chat_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/chat_service.py)
-- Orchestrate the RAG flow:
-    1. Search for context in ChromaDB.
-    2. Build a context-aware prompt.
-    3. Call Gemini 1.5 Flash for grounded response.
-    4. Save conversation to PostgreSQL.
+#### [NEW] [medicine_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/medicine_service.py)
+- Manage medication schedules and adherence logs.
 
 ### API Endpoints (`backend/app/api/v1/endpoints`)
 
-#### [NEW] [chat.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/chat.py)
-- `POST /`: Send a message and get an AI response.
-- `GET /history`: Retrieve previous conversation messages.
+#### [NEW] [analytics.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/analytics.py)
+- `GET /stats`: Fetch user health statistics.
 
-### Main App Updates
+#### [NEW] [admin.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/admin.py)
+- `POST /doctors`: Add/Update doctors (Admin only).
+- `POST /knowledge`: Add documents to the RAG knowledge base.
 
-#### [MODIFY] [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py)
-- Register the `chat` router.
-- Trigger Knowledge Base seeding on startup.
+### Model Updates (`backend/app/models`)
 
-## RAG Pipeline Flow
+#### [MODIFY] [user.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/user.py)
+- Add `is_admin` boolean field.
+- Add `fcm_token` field for push notifications.
+
+## Architecture Diagram
 
 ```mermaid
 graph TD
-    Query[User Query] --> Embed[Embed Query]
-    Embed --> Search[Semantic Search - ChromaDB]
-    Search --> Context[Retrieve Relevant Snippets]
-    Context --> Prompt[Augmented Prompt Builder]
-    Query --> Prompt
-    Prompt --> Gemini[Gemini 1.5 Flash]
-    Gemini --> Response[Grounded Response + Citations]
+    User[Mobile App] -->|Request Stats| API[FastAPI]
+    API --> AS[Analytics Service]
+    AS --> DB[(PostgreSQL)]
+
+    API --> MS[Medicine Service]
+    MS --> TS[Task Scheduler]
+    TS -->|Queue Notif| Redis[(Redis)]
+    Redis --> Worker[Celery Worker]
+    Worker --> NS[Notification Service]
+    Worker --> FCM[Firebase FCM]
+    FCM -->|Push| User
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **RAG Tests**: Verify that querying for "Diabetes" returns the correct medical snippets from the knowledge base.
-- **Embedding Tests**: Ensure vectors are correctly generated for arbitrary text.
+- **Analytics Tests**: Verify the SQL aggregation logic for calculating average heart rate and step counts.
+- **Permission Tests**: Ensure a non-admin user cannot access `/admin` endpoints.
 
 ### Manual Verification
-- Use Swagger to ask "What are the visiting hours?" and verify the AI cites the hospital policy.
-- Check the `mediai_chroma` container logs to monitor search performance.
+- Manually trigger a "Medicine Reminder" task and verify the log shows a notification was dispatched.
+- Update a user's `is_admin` flag in the DB and verify access to administrative tools in Swagger.

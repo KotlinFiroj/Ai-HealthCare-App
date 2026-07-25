@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import auth, patients, doctors, appointments, reports, chat
+from app.api.v1.endpoints import auth, patients, doctors, appointments, reports, chat, analytics, admin
 from app.services.rag_service import rag_service
 
 app = FastAPI(
@@ -30,6 +30,8 @@ app.include_router(doctors.router, prefix=f"{settings.API_V1_STR}/doctors", tags
 app.include_router(appointments.router, prefix=f"{settings.API_V1_STR}/appointments", tags=["appointments"])
 app.include_router(reports.router, prefix=f"{settings.API_V1_STR}/reports", tags=["reports"])
 app.include_router(chat.router, prefix=f"{settings.API_V1_STR}/chat", tags=["chat"])
+app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics", tags=["analytics"])
+app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin"])
 
 @app.get("/")
 async def root():

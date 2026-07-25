@@ -1,18 +1,18 @@
-# Tasks - Phase 25: RAG Pipeline with ChromaDB
+# Tasks - Phase 26: Analytics, Notifications & Admin Services
 
-- `[x]` Implement Chat History Model
-    - `[x]` Create `backend/app/models/chat.py`
-    - `[x]` Update `MediAIDatabase` imports
-- `[x]` Configure ChromaDB Client
-    - `[x]` Create `backend/app/core/chroma_db.py`
-- `[x]` Implement RAG Service
-    - `[x]` Create `backend/app/services/rag_service.py` (Embed & Retrieve)
-- `[x]` Implement Chat Orchestration
-    - `[x]` Create `backend/app/services/chat_service.py`
-- `[x]` Implement Chat API
-    - `[x]` Create `backend/app/schemas/chat.py`
-    - `[x]` Create `backend/app/api/v1/endpoints/chat.py`
-- `[x]` Integrate with Main App
-    - `[x]` Register Chat Router in `main.py`
-    - `[x]` Implement knowledge base seeding on startup
-- `[ ]` Verify Semantic Search and Grounded Responses
+- `[x]` Update User Model
+    - `[x]` Add `is_admin` and `fcm_token` to `User` model in `user.py`
+- `[x]` Define API Schemas
+    - `[x]` `analytics.py`
+    - `[x]` `notification.py`
+- `[x]` Implement Service Layer
+    - `[x]` `analytics_service.py`
+    - `[x]` `notification_service.py` (FCM Integration)
+    - `[x]` `medicine_service.py`
+- `[x]` Implement API Endpoints
+    - `[x]` `analytics.py` (GET /stats)
+    - `[x]` `admin.py` (Doctor & Knowledge management)
+- `[x]` Register Routers in `main.py`
+- `[x]` Implement Background Notification Task
+    - `[x]` Add `send_push_notification_task` to Celery
+- `[ ]` Verify Admin Access and Analytics Aggregation
