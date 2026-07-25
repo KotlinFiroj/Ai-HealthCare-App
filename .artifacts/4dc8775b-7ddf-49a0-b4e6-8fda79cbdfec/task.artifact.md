@@ -1,20 +1,19 @@
-# Tasks - Phase 27: specialized AI Agents & Evaluation Pipeline
+# Tasks - Phase 28: Production DevOps & Backend Hardening
 
-- `[x]` Setup Agentic Framework Structure
-    - `[x]` Create `backend/app/core/agents`
-    - `[x]` Create `backend/app/core/tools`
-    - `[x]` Create `backend/app/core/eval`
-- `[x]` Implement Base Agent Logic
-    - `[x]` `base_agent.py` (Memory & Tool management)
-- `[x]` Implement Backend Tools (Function Calling)
-    - `[x]` `medical_tools.py` (Booking, Vitals, Reports)
-- `[x]` Implement Specialized Agents
-    - `[x]` `AppointmentAgent`
-    - `[x]` `DiagnosticAgent`
-    - `[x]` `ReportAgent`
-- `[x]` Implement Orchestration Agent
-    - `[x]` `MediAiOrchestrator`
-- `[x]` Update Chat Service to use Agent Flow
-- `[x]` Implement AI Evaluation Pipeline
-    - `[x]` `evaluator.py` (Scoring and Ground Truth)
-- `[ ]` Verify Agent Autonomy and Function Calling
+- `[x]` Setup Database Migrations (Alembic)
+    - `[x]` Initialize Alembic in `backend/`
+    - `[x]` Create `env.py` and `script.py.mako`
+    - `[x]` Generate initial migration script
+- `[x]` Implement Backend Testing Suite (Pytest)
+    - `[x]` Create `backend/tests/conftest.py`
+    - `[x]` Implement `test_auth.py`
+    - `[x]` Implement `test_agents.py`
+- `[x]` Configure Nginx Reverse Proxy
+    - `[x]` Create `infra/nginx/nginx.conf`
+    - `[x]` Update `docker-compose.yml` to include Nginx
+- `[x]` Create Kubernetes Manifests
+    - `[x]` `infra/k8s/deployment.yaml`
+    - `[x]` `infra/k8s/service.yaml`
+- `[x]` Setup Backend CI Workflow
+    - `[x]` Create `.github/workflows/backend-ci.yml`
+- `[x]` Final Quality Check & Project Wrap-up

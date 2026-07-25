@@ -1,75 +1,73 @@
-# Implementation Plan - Phase 27: specialized AI Agents & Evaluation Pipeline
+# Implementation Plan - Phase 28: Production DevOps & Backend Hardening
 
-Transform the backend AI from a simple request-response model into a system of **specialized AI Agents** with function-calling capabilities and a rigorous evaluation framework.
+Finalize the **MediAI Enterprise** backend with enterprise-grade infrastructure, automated migrations, and rigorous quality assurance.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase implements the "Agentic" behavior requested in the project goals.
+> This phase establishes the "Production-Ready" status of the server-side ecosystem.
 >
-> - **AI Agents**: We will create dedicated agent definitions for `Medical Chat`, `Appointments`, `OCR`, and `Emergency`.
-> - **Function Calling**: We will expose our backend services as "Tools" that Gemini can autonomously decide to use (e.g., the Chat Agent can decide to call the Appointment Tool to book a slot).
-> - **Evaluation Pipeline**: We will implement a scoring system to evaluate AI responses for clinical accuracy, tone, and safety disclaimers.
+> - **Schema Versioning**: We will use **Alembic** to ensure database changes are trackable and reversible.
+> - **Orchestration**: We will move beyond Docker Compose to **Kubernetes** manifests for scalable deployments.
+> - **Edge Security**: **NGINX** will be introduced as a gateway to handle rate limiting and secure headers.
+> - **File Integrity**: Reports will now be handled via a Cloud Storage service (simulated via MinIO or AWS S3 SDK).
 
 ## Proposed Changes
 
-### AI Agent Framework (`backend/app/core/agents`)
+### Database Versioning (`backend/app/db`)
 
-#### [NEW] [base_agent.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/agents/base_agent.py)
-- Define the `BaseAgent` class with role, memory, and tool integration.
+#### [NEW] [Alembic Configuration](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/alembic.ini)
+- Initialize Alembic for the project.
+- Create the first migration script that matches our SQLAlchemy models.
 
-#### [NEW] [medical_agents.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/agents/medical_agents.py)
-- Implement specialized agents:
-    - **Appointment Agent**: Specializes in scheduling and availability logic.
-    - **Diagnostic Agent**: Handles symptom checking and urgency detection.
-    - **Report Agent**: Focused on interpreting medical documents.
+### Backend Testing Suite (`backend/tests`)
 
-### Tooling & Function Calling (`backend/app/core/tools`)
+#### [NEW] [conftest.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/tests/conftest.py)
+- Setup a test database and a clean environment for every test run.
 
-#### [NEW] [medical_tools.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/tools/medical_tools.py)
-- Expose Python functions to the AI:
-    - `search_doctors_tool`
-    - `get_user_health_history_tool`
-    - `trigger_emergency_alert_tool`
+#### [NEW] [Test Cases](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/tests/)
+- `test_auth.py`: Verify registration and JWT validation.
+- `test_agents.py`: Verify orchestrator routing and tool execution.
 
-### Evaluation Pipeline (`backend/app/core/eval`)
+### Infrastructure & Orchestration (`/`)
 
-#### [NEW] [evaluator.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/eval/evaluator.py)
-- A system to run a battery of test prompts and compare AI outputs against "Ground Truth" or safety benchmarks.
+#### [NEW] [nginx.conf](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/infra/nginx/nginx.conf)
+- Configure Nginx as a reverse proxy for the FastAPI app.
+- Implement rate limiting to prevent API abuse.
 
-### API Integration
+#### [NEW] [Kubernetes Manifests](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/infra/k8s/)
+- `deployment.yaml`: Define replicas, resource limits, and environment variables.
+- `service.yaml`: Configure LoadBalancer/ClusterIP access.
 
-#### [MODIFY] [chat_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/chat_service.py)
-- Update the chat flow to route requests through the **MediAI Orchestrator Agent**.
+### CI/CD Integration
 
-## Agent Architecture Diagram
+#### [NEW] [backend-ci.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/.github/workflows/backend-ci.yml)
+- GitHub Actions workflow to run **Pytest** and build the Docker image for the backend.
+
+## Production Architecture Diagram
 
 ```mermaid
 graph TD
-    User[User Message] --> Orchestrator[MediAI Orchestrator Agent]
+    User[Mobile App] -->|HTTPS| Nginx[NGINX Reverse Proxy]
+    Nginx -->|Load Balance| K8s[Kubernetes Cluster]
 
-    subgraph Specialized Agents
-        Orchestrator --> AA[Appointment Agent]
-        Orchestrator --> DA[Diagnostic Agent]
-        Orchestrator --> RA[Report Agent]
+    subgraph K8s Pods
+        API[FastAPI Web Server]
+        Worker[Celery Worker]
     end
 
-    subgraph Tools
-        AA --> T1[Booking Tool]
-        DA --> T2[Symptom DB Tool]
-        RA --> T3[OCR Parser Tool]
-    end
-
-    Tools --> Services[Backend Services]
-    Services --> Response[Grounded & Actionable Response]
+    API --> DB[(PostgreSQL)]
+    API --> Redis[(Redis)]
+    API --> S3[(Cloud Storage)]
+    Worker --> Gemini[Gemini 1.5 Pro]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Agent Logic Tests**: Verify that the orchestrator correctly routes "I want to see a doctor" to the Appointment Agent.
-- **Function Calling Tests**: Ensure the AI correctly formats arguments for the backend tools.
+- Run `pytest` and ensure 100% pass rate for core services.
+- Run `alembic check` to verify migration consistency.
 
 ### Manual Verification
-- Test complex queries like "My head hurts, can you find me a doctor for tomorrow?" (Requires routing from Diagnostic -> Appointment).
-- Run the Evaluation script and verify the "Accuracy Score" for common medical queries.
+- Deploy the ecosystem using `docker-compose` and verify Nginx correctly proxies traffic to the FastAPI server.
+- Verify that rate limiting triggers after multiple rapid requests to the same endpoint.

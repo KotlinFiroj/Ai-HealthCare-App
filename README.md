@@ -16,6 +16,14 @@ MediAI Enterprise is a production-grade Android application designed for learnin
 - **Enterprise Security**: Biometric login, SQLCipher encryption, and Keystore management.
 - **Offline First**: Robust background sync using WorkManager.
 
+## Backend Infrastructure
+MediAI Enterprise is powered by a high-performance **FastAPI** backend:
+- **Scalable Microservices**: Containerized using **Docker** and orchestrated via **Kubernetes**.
+- **Autonomous AI Agents**: Specialized agents for diagnostics and scheduling using **Gemini 1.5**.
+- **Vector Search (RAG)**: Grounded medical reasoning using **ChromaDB**.
+- **Asynchronous Tasks**: Heavy OCR and AI analysis handled by **Celery** and **Redis**.
+- **Production Gateway**: **NGINX** reverse proxy with rate limiting and edge security.
+
 ## Architecture
 
 The project follows **Clean Architecture** principles and is modularized into 20+ feature and core layers.

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediai-backend
+  labels:
+    app: mediai-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mediai-backend
+  template:
+    metadata:
+      labels:
+        app: mediai-backend
+    spec:
+      containers:
+      - name: backend
+        image: mediai/enterprise-backend:latest
+        ports:
+        - containerPort: 8888
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: mediai-secrets
+              key: database-url
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mediai-secrets
+              key: gemini-api-key
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 10
