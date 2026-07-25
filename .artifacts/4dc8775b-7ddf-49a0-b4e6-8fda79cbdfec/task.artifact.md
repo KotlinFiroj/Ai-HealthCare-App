@@ -1,15 +1,19 @@
-# Tasks - Phase 20: Final Production Review & Optimization
+# Tasks - Phase 21: Backend Foundation & Database Architecture
 
-- `[x]` Setup Performance Modules
-    - `[x]` Create `:benchmark` module
-    - `[x]` Create `:baselineprofile` module
-- `[x]` Generate Enterprise Documentation (`docs/`)
-    - `[x]` `ARCHITECTURE_GUIDE.md`
-    - `[x]` `AI_GUIDE.md`
-    - `[x]` `SECURITY_GUIDE.md`
-    - `[x]` `ANDROID_GUIDE.md`
-- `[x]` Final Code Polish
-    - `[x]` Sweep for KDoc completeness
-    - `[x]` Refactor any remaining mocks to clear interfaces
-- `[x]` Update Project README
-- `[x]` Final Build and Quality Check
+- `[x]` Setup Backend Project Structure
+    - `[x]` Create `backend/app` directories
+    - `[x]` Create `requirements.txt`
+- `[x]` Configure Infrastructure (Docker)
+    - `[x]` Create `docker-compose.yml`
+    - `[x]` Create `Dockerfile` for FastAPI
+- `[x]` Implement Database Models (SQLAlchemy)
+    - `[x]` `Base` model with audit fields
+    - `[x]` `User` & `PatientProfile` models
+    - `[x]` `Doctor` & `Appointment` models
+    - `[x]` `MedicalRecord` & `Medication` models
+- `[x]` Configure Core Backend
+    - `[x]` `config.py` (Pydantic settings)
+    - `[x]` `database.py` (Async SQLAlchemy setup)
+- `[x]` Initialize Main App Entry Point
+    - `[x]` `main.py`
+- `[ ]` Verify Container Orchestration and DB Connectivity
