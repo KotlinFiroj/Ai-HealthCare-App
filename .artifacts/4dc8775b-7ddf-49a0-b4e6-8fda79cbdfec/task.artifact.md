@@ -1,19 +1,19 @@
-# Tasks - Phase 28: Production DevOps & Backend Hardening
+# Tasks - Phase 29: Android-Backend Connectivity & Full-Stack Integration
 
-- `[x]` Setup Database Migrations (Alembic)
-    - `[x]` Initialize Alembic in `backend/`
-    - `[x]` Create `env.py` and `script.py.mako`
-    - `[x]` Generate initial migration script
-- `[x]` Implement Backend Testing Suite (Pytest)
-    - `[x]` Create `backend/tests/conftest.py`
-    - `[x]` Implement `test_auth.py`
-    - `[x]` Implement `test_agents.py`
-- `[x]` Configure Nginx Reverse Proxy
-    - `[x]` Create `infra/nginx/nginx.conf`
-    - `[x]` Update `docker-compose.yml` to include Nginx
-- `[x]` Create Kubernetes Manifests
-    - `[x]` `infra/k8s/deployment.yaml`
-    - `[x]` `infra/k8s/service.yaml`
-- `[x]` Setup Backend CI Workflow
-    - `[x]` Create `.github/workflows/backend-ci.yml`
-- `[x]` Final Quality Check & Project Wrap-up
+- `[x]` Configure Network Gateway
+    - `[x]` Update `NetworkModule.kt` with live `BASE_URL`
+    - `[x]` Update `AndroidManifest.xml` for cleartext traffic
+- `[x]` Implement Feature API Services
+    - `[x]` `HomeApiService` (Analytics & Trends)
+    - `[x]` `AppointmentApiService` (Doctors & Booking)
+    - `[x]` `ReportApiService` (Uploads & Analysis)
+    - `[x]` `ChatApiService` (Agentic Chat)
+    - `[x]` `AiApiService` (Diagnostics & Risk)
+- `[x]` Refactor Repositories to Live Data
+    - `[x]` `HomeRepositoryImpl`
+    - `[x]` `AppointmentRepositoryImpl`
+    - `[x]` `ReportRepositoryImpl`
+    - `[x]` `ChatRepositoryImpl`
+    - `[x]` `AiRepositoryImpl`
+- `[x]` Implement Data Mappers (Remote -> Domain)
+- `[ ]` Verify End-to-End Connectivity

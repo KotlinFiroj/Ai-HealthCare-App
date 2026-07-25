@@ -1,11 +1,14 @@
 package com.mediai.enterprise.feature.reports.di
 
+import com.mediai.enterprise.feature.reports.data.remote.ReportApiService
 import com.mediai.enterprise.feature.reports.data.repository.ReportRepositoryImpl
 import com.mediai.enterprise.feature.reports.domain.repository.ReportRepository
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
@@ -17,4 +20,12 @@ abstract class ReportModule {
     abstract fun bindReportRepository(
         reportRepositoryImpl: ReportRepositoryImpl
     ): ReportRepository
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideReportApiService(retrofit: Retrofit): ReportApiService {
+            return retrofit.create(ReportApiService.class.java)
+        }
+    }
 }

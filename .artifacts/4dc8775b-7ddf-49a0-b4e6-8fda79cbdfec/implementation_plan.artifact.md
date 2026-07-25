@@ -1,73 +1,80 @@
-# Implementation Plan - Phase 28: Production DevOps & Backend Hardening
+# Implementation Plan - Phase 29: Android-Backend Connectivity & Full-Stack Integration
 
-Finalize the **MediAI Enterprise** backend with enterprise-grade infrastructure, automated migrations, and rigorous quality assurance.
+Bridge the gap between the **MediAI Mobile App** and the **FastAPI Backend**, replacing all remaining mock data with live service integration.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase establishes the "Production-Ready" status of the server-side ecosystem.
+> This phase transitions the application from a standalone UI demo to a fully functional healthcare platform.
 >
-> - **Schema Versioning**: We will use **Alembic** to ensure database changes are trackable and reversible.
-> - **Orchestration**: We will move beyond Docker Compose to **Kubernetes** manifests for scalable deployments.
-> - **Edge Security**: **NGINX** will be introduced as a gateway to handle rate limiting and secure headers.
-> - **File Integrity**: Reports will now be handled via a Cloud Storage service (simulated via MinIO or AWS S3 SDK).
+> - **API URL**: We will set the base URL to `http://10.0.2.2:80` (Standard Android Emulator gateway to host machine via Nginx).
+> - **Live Flow**: Real registration, login, doctor search, and report uploads will now be functional.
+> - **Data Persistence**: Data will move from the Mobile UI -> Android Repository -> FastAPI -> PostgreSQL/ChromaDB.
 
 ## Proposed Changes
 
-### Database Versioning (`backend/app/db`)
+### Android Network Layer (`:core:network`)
 
-#### [NEW] [Alembic Configuration](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/alembic.ini)
-- Initialize Alembic for the project.
-- Create the first migration script that matches our SQLAlchemy models.
+#### [MODIFY] [NetworkModule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/network/src/main/kotlin/com/mediai/enterprise/core/network/di/NetworkModule.kt)
+- Update `BASE_URL` to point to the Nginx gateway.
 
-### Backend Testing Suite (`backend/tests`)
+### Feature API Interfaces (`:feature:*`)
 
-#### [NEW] [conftest.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/tests/conftest.py)
-- Setup a test database and a clean environment for every test run.
+#### [NEW] [HomeApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/data/remote/HomeApiService.kt)
+- Endpoints for `GET /analytics/stats` and `GET /analytics/trends`.
 
-#### [NEW] [Test Cases](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/tests/)
-- `test_auth.py`: Verify registration and JWT validation.
-- `test_agents.py`: Verify orchestrator routing and tool execution.
+#### [NEW] [AppointmentApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/data/remote/AppointmentApiService.kt)
+- Endpoints for doctor search, details, and booking.
 
-### Infrastructure & Orchestration (`/`)
+#### [NEW] [ReportApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/data/remote/ReportApiService.kt)
+- Endpoints for report uploads and retrieval.
 
-#### [NEW] [nginx.conf](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/infra/nginx/nginx.conf)
-- Configure Nginx as a reverse proxy for the FastAPI app.
-- Implement rate limiting to prevent API abuse.
+#### [NEW] [ChatApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/data/remote/ChatApiService.kt)
+- Endpoints for sending messages and history.
 
-#### [NEW] [Kubernetes Manifests](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/infra/k8s/)
-- `deployment.yaml`: Define replicas, resource limits, and environment variables.
-- `service.yaml`: Configure LoadBalancer/ClusterIP access.
+#### [NEW] [AiApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/data/remote/AiApiService.kt)
+- Endpoints for symptom checking and risk assessment.
 
-### CI/CD Integration
+### Repository Refactoring
 
-#### [NEW] [backend-ci.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/.github/workflows/backend-ci.yml)
-- GitHub Actions workflow to run **Pytest** and build the Docker image for the backend.
+#### [MODIFY] [All Repository Implementations](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/*/src/main/kotlin/com/mediai/enterprise/feature/*/data/repository/)
+- Replace all `delay(1500)` and mock object returns with actual `apiService` calls.
+- Implement proper mapping from Remote DTOs to Domain models.
 
-## Production Architecture Diagram
+### App Configuration
+
+#### [MODIFY] [AndroidManifest.xml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/app/src/main/AndroidManifest.xml)
+- Ensure `android:usesCleartextTraffic="true"` for local development (if not using HTTPS).
+
+## Full-Stack Integration Diagram
 
 ```mermaid
-graph TD
-    User[Mobile App] -->|HTTPS| Nginx[NGINX Reverse Proxy]
-    Nginx -->|Load Balance| K8s[Kubernetes Cluster]
-
-    subgraph K8s Pods
-        API[FastAPI Web Server]
-        Worker[Celery Worker]
+graph LR
+    subgraph Android App
+        UI[Jetpack Compose UI] --> VM[ViewModel]
+        VM --> UC[UseCase]
+        UC --> Repo[Repository]
+        Repo --> API_Client[Retrofit Service]
     end
 
-    API --> DB[(PostgreSQL)]
-    API --> Redis[(Redis)]
-    API --> S3[(Cloud Storage)]
-    Worker --> Gemini[Gemini 1.5 Pro]
+    API_Client -->|HTTP/JWT| Nginx[NGINX Gateway]
+
+    subgraph Backend Ecosystem
+        Nginx --> FastAPI[FastAPI API]
+        FastAPI --> Services[Business Services]
+        Services --> DB[(PostgreSQL)]
+        Services --> Vector[(ChromaDB)]
+        Services --> Worker[Celery/Redis]
+    end
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `pytest` and ensure 100% pass rate for core services.
-- Run `alembic check` to verify migration consistency.
+- Run `Pytest` on the backend to ensure endpoints are ready.
+- Run Android Unit Tests (MockK) ensuring repositories correctly call the `ApiService`.
 
 ### Manual Verification
-- Deploy the ecosystem using `docker-compose` and verify Nginx correctly proxies traffic to the FastAPI server.
-- Verify that rate limiting triggers after multiple rapid requests to the same endpoint.
+- Perform a "Sign Up" in the app and verify the record exists in the `mediai_db` PostgreSQL container.
+- Upload a medical report in the app and watch the `mediai_worker` logs process the AI analysis.
+- Chat with the AI and verify the responses are grounded in the seeded knowledge base.

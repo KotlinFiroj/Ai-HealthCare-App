@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://api.mediai-healthcare.com/v1/" // Mock URL
+    private const val BASE_URL = "http://10.0.2.2/api/v1/" // Nginx Gateway for Emulator
 
     @Provides
     @Singleton
