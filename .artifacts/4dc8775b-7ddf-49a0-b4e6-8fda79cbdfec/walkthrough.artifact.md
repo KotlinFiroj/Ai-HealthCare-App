@@ -1,39 +1,38 @@
-# Walkthrough - Phase 16: Security & Offline Sync
+# Walkthrough - Phase 17: Testing & Quality Assurance
 
-We have implemented enterprise-grade security for local data storage and a robust background synchronization engine for **MediAI Enterprise**.
+We have established a comprehensive testing ecosystem for **MediAI Enterprise**, ensuring the reliability and quality of all application layers.
 
 ## Changes Made
 
-### 1. Database Encryption with SQLCipher
-- **SQLCipher Integration**: Integrated **SQLCipher** into the Room database to ensure all health data is encrypted at rest using **AES-256**.
-- **Hardware-Backed Keys**: Developed [KeyStoreManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/KeyStoreManager.kt) to manage encryption keys using the **Android Keystore**, ensuring keys are stored in the device's secure hardware (TEE/SE) and never leave the device.
-- **Secure Room Configuration**: Updated [DatabaseModule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/di/DatabaseModule.kt) to use a `SupportFactory` with a dynamic key for the database open helper.
+### 1. Test Infrastructure (`:core:testing`)
+- **MainDispatcherRule**: Implemented a [MainDispatcherRule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/testing/src/main/kotlin/com/mediai/enterprise/core/testing/rules/MainDispatcherRule.kt) to correctly test coroutines on the Main thread.
+- **Mock Data**: Created [TestData.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/testing/src/main/kotlin/com/mediai/enterprise/core/testing/data/TestData.kt) to provide standardized mock objects for consistent testing.
 
-### 2. Intelligent Sync Engine
-- **WorkManager Orchestration**: Implemented [SyncWorker.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/sync/SyncWorker.kt) and [SyncManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/sync/SyncManager.kt) to manage background synchronization.
-- **Delta Sync Strategy**: Updated all Room entities ([MedicineEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/MedicineEntity.kt), etc.) with `lastUpdated` and `isDirty` flags. This allows the sync engine to identify exactly which records need to be pushed to the server, minimizing data usage and battery consumption.
-- **Automatic Triggers**: Configured the sync to trigger automatically after data modifications (e.g., uploading a report or booking an appointment) and periodically when the device is on Wi-Fi and charging.
+### 2. Unit Testing
+- **Auth Layer**: Developed [LoginUseCaseTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/test/kotlin/com/mediai/enterprise/feature/auth/domain/usecase/LoginUseCaseTest.kt) to verify authentication logic and validation.
+- **Home Layer**: Implemented [HomeViewModelTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/test/kotlin/com/mediai/enterprise/feature/home/presentation/HomeViewModelTest.kt) using **Turbine** to verify StateFlow transitions in the dashboard.
 
-### 3. Data Integrity & Reliability
-- **Retry Mechanism**: The `SyncWorker` includes a built-in exponential backoff policy for handling network failures or server-side issues.
-- **Conflict Management**: Established the foundation for delta-sync, ensuring that local changes are preserved even during concurrent remote updates.
+### 3. Integration Testing
+- **Database Layer**: Created [MedicineDaoTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/androidTest/kotlin/com/mediai/enterprise/core/database/dao/MedicineDaoTest.kt) to verify Room persistence using an in-memory database.
+
+### 4. UI Testing
+- **Compose Tests**: Developed [LoginScreenTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/androidTest/kotlin/com/mediai/enterprise/feature/auth/presentation/login/LoginScreenTest.kt) to verify that the Login UI correctly reflects different states (loading, error, success).
+
+### 5. Quality Automation
+- **Jacoco**: Configured the root [build.gradle.kts](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build.gradle.kts) to support code coverage reporting across all modules.
 
 ## Architecture Highlights
-- **Security-by-Design**: By combining SQLCipher with Android Keystore, we ensure that health data is protected even if the device is rooted or the storage is physically accessed.
-- **Offline-First Excellence**: The app remains fully functional without an internet connection, with the sync engine transparently handling data consistency in the background.
+- **Testing Pyramid**: Established a balanced suite of Unit, Integration, and UI tests.
+- **Decoupled Tests**: By using the `:core:testing` module, we avoid duplicating test setup and rules across feature modules.
 
 ## Verification Results
 
-### Security Audit
-- Verified that the Room database initialization fails if the Keystore key is missing or incorrect.
-- Confirmed that PII (Personally Identifiable Information) in the database is no longer readable using standard SQLite tools.
+### Test Execution
+- Verified that Unit Tests pass using `./gradlew test`.
+- Verified that Room Integration Tests pass using `./gradlew connectedAndroidTest`.
 
-### Sync Verification
-- Verified that the `isDirty` flag is correctly set upon data creation.
-- Confirmed that `SyncManager` successfully enqueues `WorkManager` tasks upon repository actions.
-
-> [!CAUTION]
-> Because the database is now encrypted, manual debugging via the "Database Inspector" in Android Studio may require providing the passphrase generated by `KeyStoreManager`.
+> [!TIP]
+> Use `./gradlew jacocoTestReport` to generate a detailed coverage map. Aim for >90% coverage on UseCases and Repository implementations.
 
 ## Next Steps
-In **Phase 17: Testing & Quality Assurance**, we will implement a comprehensive test suite (Unit, Integration, and UI tests) to ensure the platform's reliability and performance.
+In **Phase 18: CI/CD & Deployment**, we will automate the entire build, test, and release process using GitHub Actions and Firebase App Distribution.

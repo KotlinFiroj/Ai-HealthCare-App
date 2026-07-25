@@ -1,71 +1,71 @@
-# Implementation Plan - Phase 16: Security & Offline Sync
+# Implementation Plan - Phase 17: Testing & Quality Assurance
 
-Implement enterprise-grade local data security and a robust background synchronization engine for **MediAI Enterprise**.
+Establish a comprehensive testing ecosystem for **MediAI Enterprise**, ensuring high reliability, performance, and code quality across all layers.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase focuses on data integrity and privacy at rest and in transit.
+> This phase establishes the "Truth" for the application's behavior.
 >
-> - **Database Encryption**: We will integrate **SQLCipher** with Room to encrypt the entire local database using AES-256.
-> - **Offline-First Sync**: We will implement a "Delta Sync" strategy using **WorkManager**, ensuring local changes are pushed to the server and remote updates are pulled seamlessly.
-> - **Secure Key Management**: The database encryption key will be stored securely in the **Android Keystore**.
+> - **Test Strategy**: We will adopt the Testing Pyramid: 70% Unit Tests, 20% Integration Tests, 10% UI Tests.
+> - **Architecture**: We will utilize the `:core:testing` module to provide shared test utilities, mock data providers, and custom JUnit rules.
+> - **Mocking**: We will use **MockK** for unit tests and **Turbine** for testing Kotlin Flows.
 
 ## Proposed Changes
 
-### Build Configuration
+### Core Testing (`:core:testing`)
 
-#### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
-- Add **SQLCipher** and **SQLite KTX** dependencies.
+#### [NEW] [MainDispatcherRule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/testing/src/main/kotlin/com/mediai/enterprise/core/testing/rules/MainDispatcherRule.kt)
+- JUnit rule to swap the Main dispatcher with a TestDispatcher for coroutine testing.
 
-### Core Database (`:core:database`)
+#### [NEW] [TestData.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/testing/src/main/kotlin/com/mediai/enterprise/core/testing/data/TestData.kt)
+- Standardized mock objects for Users, Reports, Appointments, and Vitals.
 
-#### [MODIFY] [DatabaseModule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/di/DatabaseModule.kt)
-- Configure `SupportFactory` for Room using a dynamic key from Keystore.
+### Unit Testing
 
-### Core Data (`:core:data`) [NEW SERVICES]
+#### [NEW] [LoginUseCaseTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/test/kotlin/com/mediai/enterprise/feature/auth/domain/usecase/LoginUseCaseTest.kt)
+- Verify authentication logic, input validation, and error handling.
 
-#### [NEW] [SyncWorker.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/sync/SyncWorker.kt)
-- A `CoroutineWorker` that orchestrates the sync process for all entities (Reports, Appointments, Vitals).
+#### [NEW] [HomeViewModelTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/test/kotlin/com/mediai/enterprise/feature/home/presentation/HomeViewModelTest.kt)
+- Verify state transitions and data loading flows in the dashboard.
 
-#### [NEW] [SyncManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/sync/SyncManager.kt)
-- Responsible for triggering syncs based on network availability and data changes.
+### Integration Testing
 
-### Entity Updates
+#### [NEW] [MedicineDaoTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/androidTest/kotlin/com/mediai/enterprise/core/database/dao/MedicineDaoTest.kt)
+- Verify Room database operations (Insert, Query, Delete) using an in-memory database.
 
-#### [MODIFY] [All Room Entities](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/)
-- Add `lastUpdated` timestamp and `isDirty` flag to all entities to support delta sync.
+### UI / Compose Testing
 
-### Security Utilities (`:core:security`)
+#### [NEW] [LoginScreenTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/androidTest/kotlin/com/mediai/enterprise/feature/auth/presentation/login/LoginScreenTest.kt)
+- Verify UI interactions (text entry, button clicks) and error visibility.
 
-#### [NEW] [KeyStoreManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/KeyStoreManager.kt)
-- Manage generation and retrieval of the database encryption key using Android Keystore.
+### Quality Assurance
+
+#### [MODIFY] [build.gradle.kts (root)](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build.gradle.kts)
+- Configure **Jacoco** for code coverage reporting.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    App[MediAI App] --> SyncManager[SyncManager]
-    SyncManager --> WM[WorkManager]
-    WM --> SyncWorker[SyncWorker]
-
-    subgraph Sync Engine
-        SyncWorker --> LocalDB[(SQLCipher Encrypted Room)]
-        SyncWorker --> API[Remote FastAPI Backend]
+    subgraph Test Suite
+        Unit[Unit Tests - JUnit/MockK]
+        Integ[Integration Tests - Room/Robolectric]
+        UI[UI Tests - Compose Test Rule]
     end
 
-    subgraph Security
-        LocalDB -.-> KeyStore[Android Keystore]
-    end
+    Unit --> Core_Testing[:core:testing]
+    Integ --> Core_Testing
+    UI --> Core_Testing
+
+    Core_Testing --> Common_Utils[Mocks/Rules/Dispatchers]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Security Tests**: Verify that the database file cannot be read without the correct SQLCipher key.
-- **Sync Tests**: Verify that "Dirty" items are correctly identified and processed by the `SyncWorker`.
+- Run `./gradlew test` to execute all unit tests.
+- Run `./gradlew connectedAndroidTest` to execute integration and UI tests on an emulator.
 
-### Manual Verification
-- Modify data in offline mode, then enable Wi-Fi and verify the sync triggers.
-- Check the app's performance during background synchronization.
-- Verify that clearing app data also clears the secure keys in Keystore (standard behavior).
+### Coverage
+- Generate a Jacoco report and verify that business logic (UseCases/ViewModels) has >90% coverage.

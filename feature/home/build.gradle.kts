@@ -16,4 +16,6 @@ dependencies {
     implementation(project(":core:navigation"))
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    testImplementation(project(":core:testing"))
 }

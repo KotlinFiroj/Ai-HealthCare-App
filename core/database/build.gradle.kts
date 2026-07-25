@@ -10,4 +10,5 @@ android {
 
 dependencies {
     implementation(project(":core:common"))
+    androidTestImplementation(project(":core:testing"))
 }

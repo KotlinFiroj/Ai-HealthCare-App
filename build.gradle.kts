@@ -10,6 +10,11 @@ plugins {
     alias(libs.plugins.room) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
+    id("jacoco")
+}
+
+jacoco {
+    toolVersion = "0.8.11"
 }
 
 subprojects {
@@ -23,5 +28,14 @@ subprojects {
         buildUponDefaultConfig = true
         allRules = false
         parallel = true
+    }
+
+    apply(plugin = "jacoco")
+
+    tasks.withType<Test> {
+        configure<JacocoTaskExtension> {
+            isIncludeNoLocationClasses = true
+            excludes = listOf("jdk.internal.*")
+        }
     }
 }

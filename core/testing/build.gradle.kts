@@ -10,7 +10,11 @@ android {
 dependencies {
     implementation(project(":core:common"))
 
-    implementation(libs.junit)
-    implementation(libs.androidx.junit)
-    implementation(libs.androidx.espresso-core)
+    api(libs.junit)
+    api(libs.mockk)
+    api(libs.mockk.android)
+    api(libs.turbine)
+    api(libs.kotlinx.coroutines.test)
+    api(libs.androidx.junit)
+    api(libs.androidx.espresso.core)
 }
