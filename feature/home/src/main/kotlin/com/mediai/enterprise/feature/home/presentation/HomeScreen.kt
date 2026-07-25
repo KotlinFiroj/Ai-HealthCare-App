@@ -30,6 +30,7 @@ fun HomeRoute(
     onNavigateToRiskPrediction: () -> Unit,
     onNavigateToHealthCoach: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
+    onNavigateToConsultation: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -44,7 +45,8 @@ fun HomeRoute(
         onNavigateToSymptomChecker = onNavigateToSymptomChecker,
         onNavigateToRiskPrediction = onNavigateToRiskPrediction,
         onNavigateToHealthCoach = onNavigateToHealthCoach,
-        onNavigateToAnalytics = onNavigateToAnalytics
+        onNavigateToAnalytics = onNavigateToAnalytics,
+        onNavigateToConsultation = onNavigateToConsultation
     )
 }
 
@@ -61,7 +63,8 @@ internal fun HomeScreen(
     onNavigateToSymptomChecker: () -> Unit,
     onNavigateToRiskPrediction: () -> Unit,
     onNavigateToHealthCoach: () -> Unit,
-    onNavigateToAnalytics: () -> Unit
+    onNavigateToAnalytics: () -> Unit,
+    onNavigateToConsultation: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -94,6 +97,28 @@ internal fun HomeScreen(
                 uiState.data?.let { data ->
                     item {
                         HealthScoreCard(score = data.healthScore)
+                    }
+
+                    if (data.upcomingAppointment != null) {
+                        item {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("Upcoming: ${data.upcomingAppointment}", style = MaterialTheme.typography.titleSmall)
+                                        Text("Starts in 5 minutes", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Button(onClick = onNavigateToConsultation) {
+                                        Text("Join")
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     item {

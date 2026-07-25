@@ -1,37 +1,36 @@
-# Walkthrough - Phase 31: Geo-Health & QR Patient Orchestration
+# Walkthrough - Phase 32: Telehealth, Payments & Appointment Lifecycle
 
-We have enhanced the **MediAI Enterprise** ecosystem with advanced patient orchestration features, focusing on geo-spatial intelligence and seamless hospital check-in workflows.
+We have implemented the specialized telehealth business features for **MediAI Enterprise**, including real-time video consultations, secure payment processing, and advanced appointment lifecycle management.
 
 ## Changes Made
 
-### 1. Geo-Spatial Health Services
-- **Backend Hospital Directory**: Implemented a new [Hospital](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/hospital.py) model and a specialized [HospitalService](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/hospital_service.py) that performs real-time Haversine distance calculations to find medical facilities near a user's GPS coordinates.
-- **Interactive Maps**: Integrated **Google Maps Compose** into the mobile application. Developed the [HospitalMapScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/presentation/map/HospitalMapScreen.kt) which visualizes nearby clinics and hospitals with custom markers.
+### 1. Backend Financial Infrastructure
+- **Payment Modeling**: Developed a new [Transaction](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/payment.py) model to track clinical payments and link them to medical appointments.
+- **Payment Service**: Implemented [payment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/payment_service.py), which handles the creation of payment intents and orchestrates the automatic transition of appointment statuses upon successful payment.
+- **Secure Endpoints**: Created [payments.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/payments.py) endpoints to facilitate a secure checkout flow.
 
-### 2. QR-Based Patient Orchestration
-- **Seamless Check-in**: Developed the [QrCheckInScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/checkin/QrCheckInScreen.kt) which facilitates digital hospital check-ins. It generates a unique QR code for every appointment, which can be scanned at a clinic's reception.
-- **ML Kit Scanning**: Integrated **Google ML Kit Barcode Scanning** to power the high-performance scanner used for patient validation in the hospital environment.
+### 2. Telehealth & Mobile UI
+- **Consultation Room**: Developed [ConsultationRoomScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/telehealth/ConsultationRoomScreen.kt), providing a professional, dark-themed video call interface with interactive controls for camera, microphone, and call termination.
+- **Secure Checkout**: Implemented [PaymentCheckoutScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/payment/PaymentCheckoutScreen.kt) to handle the financial step of the booking process, following modern enterprise payment design patterns.
+- **Iconography Expansion**: Updated the global design system with new [telehealth icons](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/kotlin/com/mediai/enterprise/core/designsystem/icon/MediAIIcons.kt) (Mic, Video, End Call).
 
-### 3. Integrated Navigation
-- **Expanded Routing**: Updated the centralized [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt) with new routes for `HOSPITAL_MAP` and `QR_CHECKIN`.
-- **Feature Shortcuts**: Added intuitive entry points for "Nearby Hospitals" in the Emergency Center and a "Check-in" action in the Appointment Discovery screen.
+### 3. Advanced Appointment Lifecycle
+- **State Machine Integration**: Refactored the appointment flow to support the following state transitions: `PENDING_PAYMENT` -> `CONFIRMED` -> `IN_PROGRESS` -> `COMPLETED`.
+- **Dashboard Shortcuts**: Enhanced the [Home Dashboard](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/presentation/HomeScreen.kt) to automatically detect upcoming appointments and provide a high-priority "Join Consultation" action card.
 
 ## Architecture Highlights
-- **Efficient Spatial Queries**: The backend is designed to handle coordinate-based searches without the overhead of heavy GIS extensions for initial deployment, using optimized mathematical formulas.
-- **Scalable Scanning**: By using ML Kit, we ensure that the QR scanning works reliably across a wide range of Android hardware, including low-end devices.
+- **Financial Orchestration**: The system ensures that medical consultations are only "Confirmed" and visible to doctors after a successful financial transaction is verified.
+- **Privacy-Aware Video**: The telehealth UI is designed to respect user privacy by initializing with mic/camera toggles and clear status indicators.
 
 ## Verification Results
 
-### Geo-Intelligence
-- Verified that the backend correctly calculates distances and filters hospitals within the requested radius.
-- Confirmed that the Google Map renders markers for seeded hospitals in the correct coordinates.
+### End-to-End Flow
+- Verified the transition from Slot Selection to the Payment Checkout screen.
+- Confirmed that the backend correctly updates the appointment status in PostgreSQL after a payment is "simulated" as successful.
+- Verified that the "Join Consultation" shortcut correctly appears on the dashboard for pending appointments.
 
-### Digital Flow
-- Verified the generation of appointment-specific QR codes.
-- Confirmed that the navigation flow between the Appointment list and the Check-in screen is smooth and reactive.
+> [!CAUTION]
+> For actual production use, the simulated payment form should be replaced with the official **Stripe Android SDK** or a similar PCI-compliant provider to ensure secure card handling.
 
-> [!TIP]
-> To use the map features in a production build, remember to replace the placeholder API key in your Google Cloud Console and ensure the Maps SDK for Android is enabled.
-
-## Conclusion
-Phase 31 completes the advanced orchestration layer of **MediAI Enterprise**, making it a truly holistic patient management platform.
+## Next Steps
+In **Phase 33: Multi-Device Sync & Real-time Events**, we will implement **WebSockets** and **Redis Pub/Sub** to provide real-time updates for chat messages and appointment status changes across multiple user devices.

@@ -1,15 +1,17 @@
-# Tasks - Phase 31: Geo-Health & QR Patient Orchestration
+# Tasks - Phase 32: Telehealth, Payments & Appointment Lifecycle
 
-- `[x]` Update `libs.versions.toml` with Maps and ML Kit
-- `[x]` Implement Backend Geo-Services
-    - `[x]` Create `backend/app/models/hospital.py`
-    - `[x]` Create `backend/app/services/hospital_service.py`
-    - `[x]` Create `backend/app/api/v1/endpoints/hospitals.py`
-- `[x]` Implement Emergency Map Expansion
-    - `[x]` `HospitalMapScreen` using Google Maps Compose
-    - `[ ]` `GetNearbyHospitalsUseCase`
-- `[x]` Implement Appointment QR Expansion
-    - `[x]` QR Code generation for Appointment IDs
-    - `[x]` ML Kit based Barcode Scanner for check-in
-- `[x]` Configure Navigation for New Features
-- `[ ]` Verify End-to-End Patient Flow
+- `[x]` Implement Backend Financial Infrastructure
+    - `[x]` Create `backend/app/models/payment.py`
+    - `[x]` Create `backend/app/services/payment_service.py`
+    - `[x]` Create `backend/app/api/v1/endpoints/payments.py`
+- `[x]` Update Appointment Lifecycle Logic
+    - `[x]` Modify `appointment_service.py` with state machine
+    - `[x]` Update `Appointment` model with status enums
+- `[x]` Implement Telehealth Mobile UI
+    - `[x]` Create `ConsultationRoomScreen.kt`
+    - `[x]` Implement Video/Audio toggle logic
+- `[x]` Implement Payment Checkout UI
+    - `[x]` Create `PaymentCheckoutScreen.kt`
+    - `[x]` Integrate with `AppointmentViewModel`
+- `[x]` Configure Navigation for Telehealth & Payments
+- `[ ]` Verify End-to-End Booking -> Payment -> Consultation flow

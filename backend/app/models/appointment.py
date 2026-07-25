@@ -17,8 +17,9 @@ class Appointment(Base):
     user_id = Column(ForeignKey("user.id"), nullable=False)
     doctor_id = Column(ForeignKey("doctor.id"), nullable=False)
     date_time = Column(DateTime, nullable=False)
-    status = Column(String, default="UPCOMING") # UPCOMING, COMPLETED, CANCELLED
+    status = Column(String, default="PENDING_PAYMENT") # PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED
     type = Column(String, default="VIDEO") # VIDEO, IN_PERSON
 
     user = relationship("User", back_populates="appointments")
     doctor = relationship("Doctor", back_populates="appointments")
+    transaction = relationship("Transaction", back_populates="appointment", uselist=False)

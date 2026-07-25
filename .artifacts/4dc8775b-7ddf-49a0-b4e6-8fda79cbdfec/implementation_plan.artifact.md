@@ -1,73 +1,69 @@
-# Implementation Plan - Phase 31: Geo-Health & QR Patient Orchestration
+# Implementation Plan - Phase 32: Telehealth, Payments & Appointment Lifecycle
 
-Expand the **MediAI Enterprise** ecosystem with specialized geo-location services for hospitals and QR-based patient check-in workflows.
+Elevate the **MediAI Enterprise** platform by implementing real-time video consultations, secure payment processing, and a full-lifecycle appointment management system.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase introduces third-party SDKs and spatial data processing.
+> This phase introduces real-time communication and financial transactions.
 >
-> - **Google Maps SDK**: The Android app will require a Google Maps API key (to be added to `local.properties`).
-> - **Spatial Queries**: The backend will implement a simple Haversine formula (or PostGIS extension if scaled) to find nearby medical facilities.
-> - **QR Integration**: We will use **ML Kit Barcode Scanning** for the check-in feature, ensuring high-performance scanning on mobile devices.
+> - **Video Technology**: We will implement a professional Telehealth UI. For a real production app, this would use WebRTC or a provider like Agora/Zoom; here, we will build the interface and signaling logic foundation.
+> - **Payment Security**: We will follow PCI-DSS inspired patterns, using a separate "Payment Session" flow to ensure sensitive card data never touches our primary backend.
+> - **Lifecycle Transitions**: Appointments will now move through states: `PENDING_PAYMENT` -> `CONFIRMED` -> `IN_PROGRESS` -> `COMPLETED` or `CANCELLED`.
 
 ## Proposed Changes
 
-### Android Infrastructure
+### Android Application (`:feature:appointment`)
 
-#### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
-- Add `google-maps-compose` and `play-services-maps`.
-- Add `mlkit-barcode-scanning`.
+#### [NEW] [ConsultationRoomScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/telehealth/ConsultationRoomScreen.kt)
+- Real-time video call UI with toggles for Mic, Camera, and End Call.
+- Chat overlay for sharing medical notes during the call.
 
-### Feature Emergency expansion (`:feature:emergency`)
+#### [NEW] [PaymentCheckoutScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/payment/PaymentCheckoutScreen.kt)
+- Secure payment entry using Material 3 components.
+- Success/Failure state handling for transactions.
 
-#### [NEW] [HospitalMapScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/presentation/map/HospitalMapScreen.kt)
-- An interactive map view showing the user's location and nearby hospitals.
-
-#### [NEW] [NearbyHospitalsUseCase.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/domain/usecase/GetNearbyHospitalsUseCase.kt)
-- Fetches hospital data from the backend based on current coordinates.
-
-### Feature Appointment expansion (`:feature:appointment`)
-
-#### [NEW] [QrCheckInScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/checkin/QrCheckInScreen.kt)
-- A screen that generates a unique QR code for a booked appointment.
-- A scanner mode for simulating hospital check-in.
+#### [MODIFY] [AppointmentViewModel.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/AppointmentViewModel.kt)
+- Add logic for `processPayment`, `cancelAppointment`, and `rescheduleAppointment`.
 
 ### Backend Services (`backend/app`)
 
-#### [NEW] [Hospital Model](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/hospital.py)
-- `Hospital`: Name, Address, Latitude, Longitude, Contact.
+#### [NEW] [Payment Model](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/payment.py)
+- `Transaction`: ID, AppointmentID, Amount, Status (SUCCESS, PENDING, FAILED), ProviderTransactionID.
 
-#### [NEW] [hospital_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/hospital_service.py)
-- Logic to find the closest hospitals using coordinate-based distance calculation.
+#### [NEW] [payment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/payment_service.py)
+- Logic to initiate payment intents and verify transaction webhooks.
 
-#### [NEW] [hospital.py (API)](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/hospitals.py)
-- `GET /nearby`: Retrieve medical facilities within a certain radius.
+#### [MODIFY] [appointment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/appointment_service.py)
+- Implement state transitions (e.g., automatically confirming an appointment once payment is verified).
 
-## Architecture Diagram
+### API Endpoints (`backend/app/api/v1/endpoints`)
+
+#### [NEW] [payments.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/payments.py)
+- `POST /create-checkout-session`: Generate a secure payment session.
+- `GET /status/{id}`: Verify payment status.
+
+## Appointment Lifecycle State Machine
 
 ```mermaid
-graph TD
-    User[Mobile App] -->|GPS Coords| API[FastAPI Server]
-    API --> HS[Hospital Service]
-    HS --> DB[(PostgreSQL with Lat/Lng)]
-    HS -->|Nearby List| API
-    API -->|JSON| User
-    User -->|Render| Maps[Google Maps Compose]
-
-    Appt[Appointment] -->|Gen ID| QR[QR Generator]
-    QR -->|Show| User
-    User -->|Scan at Clinic| Scanner[ML Kit Scanner]
-    Scanner -->|Validate| API
+stateDiagram-v2
+    [*] --> PENDING_PAYMENT : Book Slot
+    PENDING_PAYMENT --> CONFIRMED : Payment Success
+    PENDING_PAYMENT --> CANCELLED : Payment Timeout/Cancel
+    CONFIRMED --> IN_PROGRESS : Doctor Starts Call
+    CONFIRMED --> RESCHEDULED : User Changes Time
+    IN_PROGRESS --> COMPLETED : Call Ends
+    IN_PROGRESS --> CANCELLED : Disconnect/Issue
+    COMPLETED --> [*]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Backend Tests**: Verify the distance calculation logic ensures accuracy (within 10-meter error margin).
-- **Unit Tests**: Verify the QR code generation logic correctly encodes the appointment ID.
+- **State Machine Tests**: Verify that an appointment cannot move to `IN_PROGRESS` if it is not `CONFIRMED`.
+- **Payment Verification Tests**: Mock the payment gateway response and verify the transaction record update.
 
 ### Manual Verification
-- Verify the map renders correctly in the Android Emulator.
-- Test the "Check-in" flow by generating a QR and "scanning" it via a simulated camera feed or screenshot.
-- Ensure "Nearby Hospitals" correctly sorts results by distance from the user.
+- Book a doctor, proceed through the payment screen, and verify the status changes to "Confirmed" on the dashboard.
+- Launch a "Video Consultation" and verify the camera/mic permissions are requested correctly.
+- Reschedule an appointment and verify the new time is reflected in the Health Timeline.

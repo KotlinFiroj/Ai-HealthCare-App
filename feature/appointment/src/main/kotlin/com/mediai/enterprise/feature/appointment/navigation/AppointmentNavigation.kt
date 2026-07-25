@@ -13,7 +13,11 @@ import com.mediai.enterprise.feature.appointment.presentation.details.DoctorDeta
 import com.mediai.enterprise.feature.appointment.presentation.list.DoctorListScreen
 
 import com.mediai.enterprise.core.navigation.QR_CHECKIN_ROUTE
+import com.mediai.enterprise.core.navigation.PAYMENT_ROUTE
+import com.mediai.enterprise.core.navigation.CONSULTATION_ROUTE
 import com.mediai.enterprise.feature.appointment.presentation.checkin.QrCheckInScreen
+import com.mediai.enterprise.feature.appointment.presentation.payment.PaymentCheckoutScreen
+import com.mediai.enterprise.feature.appointment.presentation.telehealth.ConsultationRoomScreen
 
 fun NavGraphBuilder.appointmentGraph(
     navController: NavHostController
@@ -50,8 +54,7 @@ fun NavGraphBuilder.appointmentGraph(
         val uiState by viewModel.uiState.collectAsState()
 
         if (uiState.bookingSuccess) {
-            // Navigate to success or back to home
-            navController.popBackStack(MediAINavDestinations.HOME_ROUTE, inclusive = false)
+            navController.navigate(PAYMENT_ROUTE)
         }
 
         BookingScreen(
@@ -59,6 +62,27 @@ fun NavGraphBuilder.appointmentGraph(
             onSlotSelected = viewModel::selectSlot,
             onConfirmClick = viewModel::bookAppointment,
             onBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(route = PAYMENT_ROUTE) {
+        val viewModel: AppointmentViewModel = hiltViewModel(navController.getBackStackEntry(MediAINavDestinations.APPOINTMENTS_ROUTE))
+        val uiState by viewModel.uiState.collectAsState()
+
+        PaymentCheckoutScreen(
+            doctorName = uiState.selectedDoctor?.name ?: "Doctor",
+            amount = 50.0, // Standard Consultation Fee
+            onPaymentSuccess = {
+                navController.navigate(MediAINavDestinations.HOME_ROUTE)
+            },
+            onBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(route = CONSULTATION_ROUTE) {
+        ConsultationRoomScreen(
+            doctorName = "Dr. Sarah Smith",
+            onEndCall = { navController.popBackStack() }
         )
     }
 

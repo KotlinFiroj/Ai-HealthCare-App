@@ -51,3 +51,14 @@ class AppointmentService:
         await db.commit()
         await db.refresh(appt)
         return appt
+
+    @staticmethod
+    async def cancel_appointment(db: AsyncSession, appt_id: UUID) -> bool:
+        result = await db.execute(select(Appointment).where(Appointment.id == appt_id))
+        appt = result.scalars().first()
+        if not appt:
+            return False
+
+        appt.status = "CANCELLED"
+        await db.commit()
+        return True

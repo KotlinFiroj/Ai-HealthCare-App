@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.mediai.enterprise.core.designsystem.theme.MediAITheme
 import com.mediai.enterprise.core.navigation.ANALYTICS_DASHBOARD_ROUTE
 import com.mediai.enterprise.core.navigation.CHAT_ROUTE
+import com.mediai.enterprise.core.navigation.CONSULTATION_ROUTE
 import com.mediai.enterprise.core.navigation.EMERGENCY_ROUTE
 import com.mediai.enterprise.core.navigation.HEALTH_COACH_ROUTE
 import com.mediai.enterprise.core.navigation.HEALTH_TIMELINE_ROUTE
@@ -97,6 +98,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToAnalytics = {
                                 navController.navigate(ANALYTICS_DASHBOARD_ROUTE)
+                            },
+                            onNavigateToConsultation = {
+                                navController.navigate(CONSULTATION_ROUTE)
                             }
                         )
 

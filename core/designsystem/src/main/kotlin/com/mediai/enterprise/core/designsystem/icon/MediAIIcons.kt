@@ -15,6 +15,13 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
+import androidx.compose.material.icons.rounded.CallEnd
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.MicOff
+import androidx.compose.material.icons.rounded.Videocam
+import androidx.compose.material.icons.rounded.VideocamOff
+import androidx.compose.ui.graphics.vector.ImageVector
+
 /**
  * MediAI Enterprise Icon Set
  * Uses Material Icons Rounded for a modern healthcare feel.
@@ -32,4 +39,9 @@ object MediAIIcons {
     val Close = Icons.Rounded.Close
     val Check = Icons.Rounded.Check
     val Back = Icons.AutoMirrored.Rounded.ArrowBack
+    val Mic = Icons.Rounded.Mic
+    val MicOff = Icons.Rounded.MicOff
+    val Video = Icons.Rounded.Videocam
+    val VideoOff = Icons.Rounded.VideocamOff
+    val EndCall = Icons.Rounded.CallEnd
 }
