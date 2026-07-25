@@ -1,80 +1,74 @@
-# Implementation Plan - Phase 24: OCR & AI Services (Async Workers)
+# Implementation Plan - Phase 25: RAG Pipeline with ChromaDB
 
-Implement high-performance, asynchronous processing for medical documents and AI-driven analysis using **Celery**, **Redis**, and **Gemini 1.5**.
+Implement a sophisticated **Retrieval-Augmented Generation (RAG)** pipeline using **ChromaDB** and **Gemini 1.5** to ground the AI Medical Chatbot in authoritative medical knowledge.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase introduces background task orchestration, which is essential for heavy-duty AI operations.
+> This phase implements the "Brain" of the enterprise medical assistant.
 >
-> - **Task Queue**: We will use **Celery** with **Redis** as a broker to handle long-running OCR and AI summarization tasks without blocking the main API thread.
-> - **AI Integration**: Integration with the **Google Generative AI (Gemini)** Python SDK on the server side.
-> - **OCR Engine**: Using **Tesseract** (or simulated via AI) for server-side text extraction from medical images/PDFs.
-> - **Multimodal Support**: The system will support both image and text inputs for medical report interpretation.
+> - **Vector Database**: We will use **ChromaDB** for high-performance semantic search.
+> - **Embeddings**: We will use Gemini's embedding model to transform medical text into vectors.
+> - **Knowledge Base**: We will initialize the system with WHO guidelines and hospital policy snippets.
+> - **Citations**: The AI will be instructed to cite its sources from the retrieved context.
 
 ## Proposed Changes
 
-### Infrastructure Updates (`/`)
+### Data Modeling (`backend/app/models`)
 
-#### [MODIFY] [docker-compose.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docker-compose.yml)
-- Add a `worker` service to run Celery.
-- Ensure `redis` is correctly linked to both `backend` and `worker`.
+#### [NEW] [chat.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/chat.py)
+- `ChatMessage` model: Store conversation history (user_id, role, content, timestamp).
 
-### Core AI & Task Logic (`backend/app/core`)
+### Vector Store Core (`backend/app/core`)
 
-#### [NEW] [celery_app.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/celery_app.py)
-- Initialize and configure the Celery application.
+#### [NEW] [chroma_db.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/chroma_db.py)
+- Initialize the ChromaDB HTTP client and define collection management.
 
-#### [NEW] [ai_engine.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/ai_engine.py)
-- Wrapper for Gemini 1.5 Pro/Flash to handle medical reasoning and summarization.
+### RAG Service Layer (`backend/app/services`)
 
-### Background Tasks (`backend/app/tasks`)
+#### [NEW] [rag_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/rag_service.py)
+- **Ingestion**: Logic to chunk and embed documents into ChromaDB.
+- **Retrieval**: Perform semantic search to find top-K relevant contexts for a user query.
+- **Initialization**: Method to seed the knowledge base with initial data.
 
-#### [NEW] [medical_tasks.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/tasks/medical_tasks.py)
-- `process_medical_report_task`: Handles OCR -> Analysis -> DB Update.
-- `generate_health_summary_task`: Chronological analysis of patient history.
+#### [NEW] [chat_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/chat_service.py)
+- Orchestrate the RAG flow:
+    1. Search for context in ChromaDB.
+    2. Build a context-aware prompt.
+    3. Call Gemini 1.5 Flash for grounded response.
+    4. Save conversation to PostgreSQL.
 
-### API & Services (`backend/app/api/v1/endpoints`)
+### API Endpoints (`backend/app/api/v1/endpoints`)
 
-#### [NEW] [reports.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/reports.py)
-- `POST /upload`: Upload a document and trigger an async processing task.
-- `GET /{id}/status`: Check the status of a background task.
+#### [NEW] [chat.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/chat.py)
+- `POST /`: Send a message and get an AI response.
+- `GET /history`: Retrieve previous conversation messages.
 
-#### [NEW] [report_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/report_service.py)
-- Manage file storage metadata and task initiation.
+### Main App Updates
 
-### Schemas (`backend/app/schemas`)
+#### [MODIFY] [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py)
+- Register the `chat` router.
+- Trigger Knowledge Base seeding on startup.
 
-#### [NEW] [report.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/report.py)
-- `ReportUploadResponse`, `ReportStatus`, `ReportAnalysisResult`.
-
-## Architecture Diagram
+## RAG Pipeline Flow
 
 ```mermaid
 graph TD
-    User[Mobile App] -->|POST /upload| API[FastAPI Server]
-    API -->|Save Metadata| DB[(PostgreSQL)]
-    API -->|Dispatch Task| Redis[(Redis Broker)]
-    Redis -->|Pick Up| Worker[Celery Worker]
-
-    subgraph AI Pipeline
-        Worker -->|Image| OCR[OCR Engine]
-        OCR -->|Raw Text| Gemini[Gemini 1.5 API]
-        Gemini -->|JSON Result| Worker
-    end
-
-    Worker -->|Update Results| DB
-    User -->|GET /status| API
-    API -->|Check Status| DB
+    Query[User Query] --> Embed[Embed Query]
+    Embed --> Search[Semantic Search - ChromaDB]
+    Search --> Context[Retrieve Relevant Snippets]
+    Context --> Prompt[Augmented Prompt Builder]
+    Query --> Prompt
+    Prompt --> Gemini[Gemini 1.5 Flash]
+    Gemini --> Response[Grounded Response + Citations]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Task Tests**: Verify that `process_medical_report_task` correctly updates the database upon completion.
-- **AI Tests**: Mock Gemini API responses and verify the parsing of the structured JSON output.
+- **RAG Tests**: Verify that querying for "Diabetes" returns the correct medical snippets from the knowledge base.
+- **Embedding Tests**: Ensure vectors are correctly generated for arbitrary text.
 
 ### Manual Verification
-- Upload a sample medical image via Swagger.
-- Monitor Celery logs to ensure the task is picked up and processed.
-- Verify that the processed AI summary appears in the database and is accessible via the API.
+- Use Swagger to ask "What are the visiting hours?" and verify the AI cites the hospital policy.
+- Check the `mediai_chroma` container logs to monitor search performance.

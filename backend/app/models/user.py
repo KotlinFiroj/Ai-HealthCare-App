@@ -10,6 +10,7 @@ class User(Base):
 
     profile = relationship("PatientProfile", back_populates="user", uselist=False)
     appointments = relationship("Appointment", back_populates="user")
+    chat_messages = relationship("ChatMessage", back_populates="user")
 
 class PatientProfile(Base):
     user_id = Column(ForeignKey("user.id"), nullable=False)
