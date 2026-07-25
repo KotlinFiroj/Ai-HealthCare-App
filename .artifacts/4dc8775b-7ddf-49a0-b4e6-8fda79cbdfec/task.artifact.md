@@ -1,15 +1,15 @@
-# Tasks - Phase 18: CI/CD & Deployment
+# Tasks - Phase 19: Observability & Monitoring
 
-- `[x]` Refactor `android.yml` CI Pipeline
-    - `[x]` Split into `lint`, `test`, and `build` jobs
-    - `[x]` Add JaCoCo report artifact upload
-- `[x]` Implement `release.yml` CD Pipeline
-    - `[x]` Define tag-based trigger (`v*`)
-    - `[x]` Add Build Release job
-    - `[x]` Add Firebase App Distribution step (placeholder)
-- `[x]` Create Release Scripts
-    - `[x]` `scripts/versioning.sh`
-- `[x]` Update Build Logic for Signing
-    - `[x]` Modify `AndroidApplicationConventionPlugin.kt`
-- `[x]` Configure GitHub Action Secrets Documentation
-- `[x]` Verify CI Pipeline Syntax
+- `[x]` Update `libs.versions.toml` with Firebase and Timber
+- `[x]` Configure Root `build.gradle.kts` for Firebase Plugins
+- `[x]` Implement `:core:analytics`
+    - `[x]` `AnalyticsHelper` Interface
+    - `[x]` `FirebaseAnalyticsHelper` Implementation
+    - `[x]` `RemoteConfigManager`
+- `[x]` Implement `:core:common` Logging
+    - `[x]` `MediAILogger` (Timber initialization)
+    - `[x]` `CrashlyticsTree` for production
+- `[x]` Update `:app` for Initialization
+    - `[x]` Initialize Timber and Firebase in `MediAIApp`
+- `[x]` Update Feature Modules to use Analytics (Dashboard)
+- `[ ]` Verify Logging and Remote Config defaults

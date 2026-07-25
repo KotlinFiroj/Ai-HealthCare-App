@@ -10,6 +10,9 @@ plugins {
     alias(libs.plugins.room) apply false
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.firebase.perf) apply false
     id("jacoco")
 }
 

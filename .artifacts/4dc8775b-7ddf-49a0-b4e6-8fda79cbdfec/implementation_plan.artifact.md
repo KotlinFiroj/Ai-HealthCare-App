@@ -1,75 +1,81 @@
-# Implementation Plan - Phase 18: CI/CD & Deployment
+# Implementation Plan - Phase 19: Observability & Monitoring
 
-Automate the full software development lifecycle for **MediAI Enterprise**, from code verification to automated distribution.
+Implement a production-grade monitoring suite for **MediAI Enterprise**, including crash reporting, performance tracking, structured logging, and remote configuration.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase establishes the automated delivery pipeline.
+> This phase establishes how we monitor the app's health in the wild.
 >
-> - **GitHub Actions**: We will implement a multi-stage pipeline: `Verify` (Lint/Test) -> `Build` (APK/AAB) -> `Distribute` (Firebase).
-> - **Secrets Management**: Deployment requires sensitive keys (Keystore, Firebase App ID, Service Account JSON). These will be managed via GitHub Secrets.
-> - **Firebase App Distribution**: We will automate internal testing releases.
+> - **Firebase Suite**: We will integrate Analytics, Crashlytics, Performance Monitoring, and Remote Config.
+> - **Structured Logging**: We will use **Timber** for organized logging, with a custom `Tree` that sends errors to Crashlytics in production.
+> - **Feature Flags**: Remote Config will be used to toggle experimental AI features (like the new Health Coach) without requiring a new app release.
 
 ## Proposed Changes
 
-### CI/CD Pipelines (`.github/workflows/`)
+### Build Configuration
 
-#### [MODIFY] [android.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/.github/workflows/android.yml)
-- Refactor into a multi-job workflow:
-    - **Lint Job**: Runs Detekt and ktlint in parallel.
-    - **Test Job**: Runs all unit tests and generates JaCoCo coverage reports.
-    - **Build Job**: Compiles the debug APK and release AAB.
+#### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
+- Add libraries for:
+    - `firebase-analytics-ktx`
+    - `firebase-crashlytics-ktx`
+    - `firebase-perf-ktx`
+    - `firebase-config-ktx`
+    - `timber`
 
-#### [NEW] [release.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/.github/workflows/release.yml)
-- A dedicated workflow triggered by Git Tags (`v*.*.*`).
-- Features:
-    - Automated Semantic Versioning.
-    - Release Notes generation using `conventional-changelog`.
-    - Artifact signing (using placeholder secrets).
-    - **Firebase App Distribution**: Upload the APK to testers automatically.
+#### [MODIFY] [build.gradle.kts (root)](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build.gradle.kts)
+- Apply Google Services and Firebase Crashlytics/Performance plugins.
 
-### Release Automation Scripts
+### Core Analytics (`:core:analytics`)
 
-#### [NEW] [versioning.sh](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/scripts/versioning.sh)
-- Script to bump versions based on commit history (feat/fix/chore).
+#### [NEW] [AnalyticsHelper.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/analytics/src/main/kotlin/com/mediai/enterprise/core/analytics/AnalyticsHelper.kt)
+- Unified interface for logging events (e.g., `logEvent(name, params)`).
 
-### Build Logic Updates
+#### [NEW] [FirebaseAnalyticsHelper.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/analytics/src/main/kotlin/com/mediai/enterprise/core/analytics/FirebaseAnalyticsHelper.kt)
+- Firebase implementation of the analytics interface.
 
-#### [MODIFY] [AndroidApplicationConventionPlugin.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt)
-- Add signing configuration blocks for release builds.
+#### [NEW] [RemoteConfigManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/analytics/src/main/kotlin/com/mediai/enterprise/core/analytics/RemoteConfigManager.kt)
+- Fetch and provide feature flags (e.g., `isAiCoachEnabled`).
 
-## Pipeline Architecture
+### Core Common (`:core:common`)
+
+#### [NEW] [MediAILogger.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/common/src/main/kotlin/com/mediai/enterprise/core/common/util/MediAILogger.kt)
+- Initialize **Timber**.
+- Implement `CrashlyticsTree` for production builds to report non-fatal exceptions.
+
+### Feature Integration
+
+#### [MODIFY] [MediAIApp.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/app/src/main/kotlin/com/mediai/enterprise/MediAIApp.kt)
+- Initialize Logging and Remote Config on app startup.
+
+## Architecture Diagram
 
 ```mermaid
-graph LR
-    Push[Git Push/PR] --> CI[CI Pipeline]
+graph TD
+    App[MediAI App] --> Logger[MediAILogger / Timber]
+    App --> Analytics[AnalyticsHelper]
+    App --> RC[RemoteConfigManager]
 
-    subgraph CI
-        Lint[Static Analysis]
-        Test[Unit Tests + JaCoCo]
-        Build_Debug[Build Debug APK]
+    subgraph Observability
+        Logger -->|Prod| Crashlytics[Firebase Crashlytics]
+        Logger -->|Debug| Logcat[Android Logcat]
+        Analytics --> Firebase_Analytics[Firebase Analytics]
+        RC --> Firebase_RC[Firebase Remote Config]
     end
 
-    CI -->|Success| PR_Merge[Merge to Main]
-
-    Tag[Git Tag v*] --> CD[CD Pipeline]
-
-    subgraph CD
-        Sign[Sign Release AAB]
-        Notes[Gen Release Notes]
-        Firebase[Firebase App Distribution]
-        PlayStore[Play Store Internal - Placeholder]
+    subgraph Build Logic
+        Plugin_Perf[Firebase Perf Plugin] --> APK[Final APK]
+        Plugin_Crash[Crashlytics Plugin] --> APK
     end
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- Validate GitHub Actions YAML syntax.
-- Simulate a workflow run using `act` (local CI runner) or by pushing to a branch.
+- **Unit Tests**: Verify that `AnalyticsHelper` correctly formats parameters before sending to Firebase.
+- **Unit Tests**: Verify default values in `RemoteConfigManager`.
 
 ### Manual Verification
-- Verify that JaCoCo reports are correctly uploaded as workflow artifacts.
-- Check that the "Release" workflow is triggered correctly by a tag.
-- (Optional) Configure a test Firebase project to verify actual distribution.
+- Verify that logs appear in Logcat during development.
+- (In a real setup) Check the Firebase Console for logged events and performance traces.
+- Toggle a feature flag in Remote Config and verify the UI updates (e.g., hiding/showing a button).
