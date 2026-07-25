@@ -12,6 +12,9 @@ import com.mediai.enterprise.feature.appointment.presentation.booking.BookingScr
 import com.mediai.enterprise.feature.appointment.presentation.details.DoctorDetailsScreen
 import com.mediai.enterprise.feature.appointment.presentation.list.DoctorListScreen
 
+import com.mediai.enterprise.core.navigation.QR_CHECKIN_ROUTE
+import com.mediai.enterprise.feature.appointment.presentation.checkin.QrCheckInScreen
+
 fun NavGraphBuilder.appointmentGraph(
     navController: NavHostController
 ) {
@@ -26,6 +29,7 @@ fun NavGraphBuilder.appointmentGraph(
                 navController.navigate("doctor_details")
             },
             onSearch = viewModel::searchDoctors,
+            onQrCheckInClick = { navController.navigate(QR_CHECKIN_ROUTE) },
             onBack = { navController.popBackStack() }
         )
     }
@@ -54,6 +58,13 @@ fun NavGraphBuilder.appointmentGraph(
             uiState = uiState,
             onSlotSelected = viewModel::selectSlot,
             onConfirmClick = viewModel::bookAppointment,
+            onBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(route = QR_CHECKIN_ROUTE) {
+        QrCheckInScreen(
+            appointmentId = "APP-12345",
             onBack = { navController.popBackStack() }
         )
     }

@@ -11,4 +11,6 @@ object MediAINavDestinations {
     const val REPORTS_ROUTE = "reports_route"
     const val REPORT_DETAIL_ROUTE = "report_detail_route"
     const val APPOINTMENTS_ROUTE = "appointments_route"
+    const val QR_CHECKIN_ROUTE = "qr_checkin_route"
+    const val HOSPITAL_MAP_ROUTE = "hospital_map_route"
 }

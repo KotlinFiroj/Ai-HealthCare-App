@@ -16,6 +16,7 @@ fun DoctorListScreen(
     uiState: AppointmentUiState,
     onDoctorClick: (String) -> Unit,
     onSearch: (String) -> Unit,
+    onQrCheckInClick: () -> Unit,
     onBack: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -23,7 +24,12 @@ fun DoctorListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Find a Doctor") }
+                title = { Text("Find a Doctor") },
+                actions = {
+                    IconButton(onClick = onQrCheckInClick) {
+                        Icon(androidx.compose.material.icons.Icons.Default.QrCode, contentDescription = "Check-in")
+                    }
+                }
             )
         }
     ) { padding ->

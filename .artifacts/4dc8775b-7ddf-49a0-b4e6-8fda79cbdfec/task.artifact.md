@@ -1,17 +1,15 @@
-# Tasks - Phase 30: Production Hardening & Final Audit
+# Tasks - Phase 31: Geo-Health & QR Patient Orchestration
 
-- `[ ]` Refine Performance Optimizations
-    - `[ ]` Update `BaselineProfileGenerator` for complex paths
-- `[ ]` Elevate Technical Documentation
-    - `[ ]` Update `ARCHITECTURE_GUIDE.md` with Mermaid diagrams
-    - `[ ]` Update `AI_GUIDE.md` with Agentic flow details
-    - `[ ]` Update `SECURITY_GUIDE.md` with breakdown of Keystore/SQLCipher
-    - `[ ]` Update `ANDROID_GUIDE.md` with Testing & CI/CD deep-dive
-- `[ ]` Final Code & Standards Audit
-    - `[ ]` Perform KDoc sweep across all 20+ modules
-    - `[ ]` Verify package naming consistency
-- `[ ]` Finalize Project README
-    - `[ ]` Add Roadmap and Contribution sections
-- `[ ]` Project Sign-off & Final Quality Check
-    - `[ ]` Run `./gradlew check`
-    - `[ ]` Verify Release build assembly
+- `[x]` Update `libs.versions.toml` with Maps and ML Kit
+- `[x]` Implement Backend Geo-Services
+    - `[x]` Create `backend/app/models/hospital.py`
+    - `[x]` Create `backend/app/services/hospital_service.py`
+    - `[x]` Create `backend/app/api/v1/endpoints/hospitals.py`
+- `[x]` Implement Emergency Map Expansion
+    - `[x]` `HospitalMapScreen` using Google Maps Compose
+    - `[ ]` `GetNearbyHospitalsUseCase`
+- `[x]` Implement Appointment QR Expansion
+    - `[x]` QR Code generation for Appointment IDs
+    - `[x]` ML Kit based Barcode Scanner for check-in
+- `[x]` Configure Navigation for New Features
+- `[ ]` Verify End-to-End Patient Flow

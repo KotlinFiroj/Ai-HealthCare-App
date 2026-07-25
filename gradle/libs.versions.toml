@@ -48,6 +48,11 @@ timber = "5.0.1"
 # AI
 gemini = "0.7.0"
 vico = "2.0.0-alpha.23"
+googleMaps = "4.4.1"
+playServicesMaps = "19.0.0"
+mlkitBarcode = "17.2.0"
+barcodeScanning = "17.2.0"
+qrGenerator = "3.5.3"
 
 # Testing
 junit = "4.13.2"
@@ -115,6 +120,10 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 vico-core = { group = "com.patrykandpatrick.vico", name = "core", version.ref = "vico" }
+google-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "googleMaps" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+google-mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkitBarcode" }
+qr-generator = { group = "com.google.zxing", name = "core", version.ref = "qrGenerator" }
 
 # WorkManager
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }

@@ -28,6 +28,7 @@ import com.mediai.enterprise.feature.emergency.presentation.EmergencyViewModel
 fun EmergencyDashboardRoute(
     onNavigateToMedicalId: () -> Unit,
     onNavigateToContacts: () -> Unit,
+    onNavigateToNearbyHospitals: () -> Unit,
     viewModel: EmergencyViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -35,7 +36,8 @@ fun EmergencyDashboardRoute(
         uiState = uiState,
         onSosClick = viewModel::triggerSos,
         onMedicalIdClick = onNavigateToMedicalId,
-        onContactsClick = onNavigateToContacts
+        onContactsClick = onNavigateToContacts,
+        onNearbyHospitalsClick = onNavigateToNearbyHospitals
     )
 }
 
@@ -45,7 +47,8 @@ internal fun EmergencyDashboardScreen(
     uiState: com.mediai.enterprise.feature.emergency.presentation.EmergencyUiState,
     onSosClick: () -> Unit,
     onMedicalIdClick: () -> Unit,
-    onContactsClick: () -> Unit
+    onContactsClick: () -> Unit,
+    onNearbyHospitalsClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -118,6 +121,13 @@ internal fun EmergencyDashboardScreen(
                     onClick = onContactsClick,
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            MediAIButton(
+                onClick = onNearbyHospitalsClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Find Nearby Hospitals")
             }
         }
     }

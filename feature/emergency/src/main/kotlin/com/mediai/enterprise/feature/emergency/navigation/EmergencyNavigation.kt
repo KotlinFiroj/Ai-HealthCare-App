@@ -7,9 +7,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.mediai.enterprise.core.navigation.EMERGENCY_ROUTE
+import com.mediai.enterprise.core.navigation.HOSPITAL_MAP_ROUTE
 import com.mediai.enterprise.feature.emergency.presentation.EmergencyViewModel
 import com.mediai.enterprise.feature.emergency.presentation.dashboard.EmergencyDashboardRoute
 import com.mediai.enterprise.feature.emergency.presentation.medicalid.MedicalIdScreen
+import com.mediai.enterprise.feature.emergency.presentation.map.HospitalMapScreen
+import com.google.android.gms.maps.model.LatLng
 
 fun NavGraphBuilder.emergencyGraph(
     navController: NavController
@@ -17,7 +20,16 @@ fun NavGraphBuilder.emergencyGraph(
     composable(route = EMERGENCY_ROUTE) {
         EmergencyDashboardRoute(
             onNavigateToMedicalId = { navController.navigate("medical_id") },
-            onNavigateToContacts = { /* Navigate to contacts */ }
+            onNavigateToContacts = { /* Navigate to contacts */ },
+            onNavigateToNearbyHospitals = { navController.navigate(HOSPITAL_MAP_ROUTE) }
+        )
+    }
+
+    composable(route = HOSPITAL_MAP_ROUTE) {
+        HospitalMapScreen(
+            userLocation = LatLng(37.7749, -122.4194), // Mock Location
+            hospitals = listOf(LatLng(37.7849, -122.4294)),
+            onBack = { navController.popBackStack() }
         )
     }
 

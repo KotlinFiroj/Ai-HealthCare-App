@@ -16,4 +16,5 @@ dependencies {
     implementation(project(":core:navigation"))
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.google.mlkit.barcode.scanning)
 }
