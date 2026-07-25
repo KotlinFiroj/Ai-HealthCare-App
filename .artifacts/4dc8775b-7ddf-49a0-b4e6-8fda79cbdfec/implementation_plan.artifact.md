@@ -1,71 +1,75 @@
-# Implementation Plan - Phase 17: Testing & Quality Assurance
+# Implementation Plan - Phase 18: CI/CD & Deployment
 
-Establish a comprehensive testing ecosystem for **MediAI Enterprise**, ensuring high reliability, performance, and code quality across all layers.
+Automate the full software development lifecycle for **MediAI Enterprise**, from code verification to automated distribution.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase establishes the "Truth" for the application's behavior.
+> This phase establishes the automated delivery pipeline.
 >
-> - **Test Strategy**: We will adopt the Testing Pyramid: 70% Unit Tests, 20% Integration Tests, 10% UI Tests.
-> - **Architecture**: We will utilize the `:core:testing` module to provide shared test utilities, mock data providers, and custom JUnit rules.
-> - **Mocking**: We will use **MockK** for unit tests and **Turbine** for testing Kotlin Flows.
+> - **GitHub Actions**: We will implement a multi-stage pipeline: `Verify` (Lint/Test) -> `Build` (APK/AAB) -> `Distribute` (Firebase).
+> - **Secrets Management**: Deployment requires sensitive keys (Keystore, Firebase App ID, Service Account JSON). These will be managed via GitHub Secrets.
+> - **Firebase App Distribution**: We will automate internal testing releases.
 
 ## Proposed Changes
 
-### Core Testing (`:core:testing`)
+### CI/CD Pipelines (`.github/workflows/`)
 
-#### [NEW] [MainDispatcherRule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/testing/src/main/kotlin/com/mediai/enterprise/core/testing/rules/MainDispatcherRule.kt)
-- JUnit rule to swap the Main dispatcher with a TestDispatcher for coroutine testing.
+#### [MODIFY] [android.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/.github/workflows/android.yml)
+- Refactor into a multi-job workflow:
+    - **Lint Job**: Runs Detekt and ktlint in parallel.
+    - **Test Job**: Runs all unit tests and generates JaCoCo coverage reports.
+    - **Build Job**: Compiles the debug APK and release AAB.
 
-#### [NEW] [TestData.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/testing/src/main/kotlin/com/mediai/enterprise/core/testing/data/TestData.kt)
-- Standardized mock objects for Users, Reports, Appointments, and Vitals.
+#### [NEW] [release.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/.github/workflows/release.yml)
+- A dedicated workflow triggered by Git Tags (`v*.*.*`).
+- Features:
+    - Automated Semantic Versioning.
+    - Release Notes generation using `conventional-changelog`.
+    - Artifact signing (using placeholder secrets).
+    - **Firebase App Distribution**: Upload the APK to testers automatically.
 
-### Unit Testing
+### Release Automation Scripts
 
-#### [NEW] [LoginUseCaseTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/test/kotlin/com/mediai/enterprise/feature/auth/domain/usecase/LoginUseCaseTest.kt)
-- Verify authentication logic, input validation, and error handling.
+#### [NEW] [versioning.sh](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/scripts/versioning.sh)
+- Script to bump versions based on commit history (feat/fix/chore).
 
-#### [NEW] [HomeViewModelTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/test/kotlin/com/mediai/enterprise/feature/home/presentation/HomeViewModelTest.kt)
-- Verify state transitions and data loading flows in the dashboard.
+### Build Logic Updates
 
-### Integration Testing
+#### [MODIFY] [AndroidApplicationConventionPlugin.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt)
+- Add signing configuration blocks for release builds.
 
-#### [NEW] [MedicineDaoTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/androidTest/kotlin/com/mediai/enterprise/core/database/dao/MedicineDaoTest.kt)
-- Verify Room database operations (Insert, Query, Delete) using an in-memory database.
-
-### UI / Compose Testing
-
-#### [NEW] [LoginScreenTest.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/androidTest/kotlin/com/mediai/enterprise/feature/auth/presentation/login/LoginScreenTest.kt)
-- Verify UI interactions (text entry, button clicks) and error visibility.
-
-### Quality Assurance
-
-#### [MODIFY] [build.gradle.kts (root)](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/build.gradle.kts)
-- Configure **Jacoco** for code coverage reporting.
-
-## Architecture Diagram
+## Pipeline Architecture
 
 ```mermaid
-graph TD
-    subgraph Test Suite
-        Unit[Unit Tests - JUnit/MockK]
-        Integ[Integration Tests - Room/Robolectric]
-        UI[UI Tests - Compose Test Rule]
+graph LR
+    Push[Git Push/PR] --> CI[CI Pipeline]
+
+    subgraph CI
+        Lint[Static Analysis]
+        Test[Unit Tests + JaCoCo]
+        Build_Debug[Build Debug APK]
     end
 
-    Unit --> Core_Testing[:core:testing]
-    Integ --> Core_Testing
-    UI --> Core_Testing
+    CI -->|Success| PR_Merge[Merge to Main]
 
-    Core_Testing --> Common_Utils[Mocks/Rules/Dispatchers]
+    Tag[Git Tag v*] --> CD[CD Pipeline]
+
+    subgraph CD
+        Sign[Sign Release AAB]
+        Notes[Gen Release Notes]
+        Firebase[Firebase App Distribution]
+        PlayStore[Play Store Internal - Placeholder]
+    end
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `./gradlew test` to execute all unit tests.
-- Run `./gradlew connectedAndroidTest` to execute integration and UI tests on an emulator.
+- Validate GitHub Actions YAML syntax.
+- Simulate a workflow run using `act` (local CI runner) or by pushing to a branch.
 
-### Coverage
-- Generate a Jacoco report and verify that business logic (UseCases/ViewModels) has >90% coverage.
+### Manual Verification
+- Verify that JaCoCo reports are correctly uploaded as workflow artifacts.
+- Check that the "Release" workflow is triggered correctly by a tag.
+- (Optional) Configure a test Firebase project to verify actual distribution.

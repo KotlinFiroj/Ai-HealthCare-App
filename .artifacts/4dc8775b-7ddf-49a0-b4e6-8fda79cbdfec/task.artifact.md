@@ -1,15 +1,15 @@
-# Tasks - Phase 17: Testing & Quality Assurance
+# Tasks - Phase 18: CI/CD & Deployment
 
-- `[x]` Update `libs.versions.toml` with Testing Libraries
-- `[x]` Implement `:core:testing` Infrastructure
-    - `[x]` `MainDispatcherRule`
-    - `[x]` `TestData` provider
-- `[x]` Implement Unit Tests
-    - `[x]` `LoginUseCaseTest`
-    - `[x]` `HomeViewModelTest`
-- `[x]` Implement Integration Tests
-    - `[x]` `MedicineDaoTest` (Room In-Memory)
-- `[x]` Implement UI Tests
-    - `[x]` `LoginScreenTest` (Compose)
-- `[x]` Configure Jacoco Code Coverage
-- `[ ]` Verify Test Suite Execution
+- `[x]` Refactor `android.yml` CI Pipeline
+    - `[x]` Split into `lint`, `test`, and `build` jobs
+    - `[x]` Add JaCoCo report artifact upload
+- `[x]` Implement `release.yml` CD Pipeline
+    - `[x]` Define tag-based trigger (`v*`)
+    - `[x]` Add Build Release job
+    - `[x]` Add Firebase App Distribution step (placeholder)
+- `[x]` Create Release Scripts
+    - `[x]` `scripts/versioning.sh`
+- `[x]` Update Build Logic for Signing
+    - `[x]` Modify `AndroidApplicationConventionPlugin.kt`
+- `[x]` Configure GitHub Action Secrets Documentation
+- `[x]` Verify CI Pipeline Syntax
