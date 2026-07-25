@@ -39,6 +39,7 @@ securityCrypto = "1.1.0-alpha06"
 
 # AI
 gemini = "0.7.0"
+vico = "2.0.0-alpha.23"
 
 # Testing
 junit = "4.13.2"
@@ -98,6 +99,9 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 google-mlkit-ocr = { group = "com.google.android.gms", name = "play-services-mlkit-text-recognition", version.ref = "mlkitOcr" }
 google-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "gemini" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+vico-core = { group = "com.patrykandpatrick.vico", name = "core", version.ref = "vico" }
 
 # WorkManager
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }

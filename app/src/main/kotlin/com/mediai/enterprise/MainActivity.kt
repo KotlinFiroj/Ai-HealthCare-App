@@ -25,7 +25,10 @@ import com.mediai.enterprise.core.navigation.HEALTH_TIMELINE_ROUTE
 import com.mediai.enterprise.core.navigation.CHAT_ROUTE
 import com.mediai.enterprise.core.navigation.SYMPTOM_CHECKER_ROUTE
 import com.mediai.enterprise.core.navigation.RISK_PREDICTION_ROUTE
+import com.mediai.enterprise.core.navigation.HEALTH_COACH_ROUTE
+import com.mediai.enterprise.core.navigation.ANALYTICS_DASHBOARD_ROUTE
 import com.mediai.enterprise.feature.ai.navigation.aiGraph
+import com.mediai.enterprise.feature.analytics.navigation.analyticsGraph
 import com.mediai.enterprise.feature.appointment.navigation.appointmentGraph
 import com.mediai.enterprise.feature.emergency.navigation.emergencyGraph
 import com.mediai.enterprise.feature.healthtimeline.navigation.healthTimelineGraph
@@ -94,6 +97,12 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToRiskPrediction = {
                                 navController.navigate(RISK_PREDICTION_ROUTE)
+                            },
+                            onNavigateToHealthCoach = {
+                                navController.navigate(HEALTH_COACH_ROUTE)
+                            },
+                            onNavigateToAnalytics = {
+                                navController.navigate(ANALYTICS_DASHBOARD_ROUTE)
                             }
                         )
 
@@ -110,6 +119,8 @@ class MainActivity : ComponentActivity() {
                         chatGraph(navController)
 
                         aiGraph(navController)
+
+                        analyticsGraph(navController)
                     }
                 }
             }

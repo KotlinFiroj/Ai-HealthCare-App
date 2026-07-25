@@ -1,75 +1,80 @@
-# Implementation Plan - Phase 14: AI Symptom Checker & Risk Prediction
+# Implementation Plan - Phase 15: AI Health Coach & Analytics
 
-Implement a diagnostic-assist tool for **MediAI Enterprise** that assesses user-reported symptoms and predicts risks for chronic conditions using **Gemini 1.5 Pro/Flash**.
+Implement personalized wellness planning and interactive health data visualization for **MediAI Enterprise**.
 
 ## User Review Required
 
-> [!CAUTION]
-> This feature provides **AI-generated health assessments** which must be clearly distinguished from medical advice.
+> [!IMPORTANT]
+> This phase focuses on long-term health management and data-driven insights.
 >
-> - **Medical Disclaimer**: Every assessment will be accompanied by a strict disclaimer that the results are probabilistic and require clinical validation.
-> - **Emergency Detection**: If symptoms suggest a critical condition (e.g., heart attack, stroke), the UI will immediately highlight the **SOS Emergency Button**.
-> - **Risk Models**: We will focus on predicting risks for Diabetes, Hypertension, Heart Disease, and Kidney Disease based on user input.
+> - **AI Coaching**: We will use Gemini to generate personalized "Wellness Blueprints" (Diet, Exercise, Sleep, Stress) based on the user's health timeline and metrics.
+> - **Data Visualization**: We will integrate the **Vico** charting library to create interactive Line and Bar charts for health trends.
+> - **New Module**: Creating `:feature:analytics` to house the coaching and data visualization screens.
 
 ## Proposed Changes
 
+### Build Configuration
+
+#### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
+- Add **Vico** (Compose charting library) dependencies.
+
 ### Core AI (`:core:ai`)
 
-#### [NEW] [MedicalDiagnosticsAi.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalDiagnosticsAi.kt)
-- Specialized service to:
-    - Analyze symptoms and identify potential conditions.
-    - Assess risk levels for chronic diseases based on lifestyle/symptom data.
-    - Provide "Explainability" for each risk factor.
+#### [NEW] [HealthCoachAi.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/HealthCoachAi.kt)
+- Specialized service to generate personalized wellness plans using **Gemini 1.5**.
+- Plans include: Daily Goals, Nutritional Focus, Exercise Routine, and Mental Health tips.
 
-### Feature AI (`:feature:ai`) [NEW MODULE]
+### Feature Analytics (`:feature:analytics`) [NEW MODULE]
 
-#### [NEW] [Feature AI Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai)
-- Create `:feature:ai` module using convention plugins.
+#### [NEW] [Feature Analytics Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics)
+- Create `:feature:analytics` module using convention plugins.
 
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/domain)
-- **SymptomAssessment** model: Conditions, Risk Level, Urgency, Specialist recommendation.
-- **RiskPrediction** model: Condition (e.g., Diabetes), Probability, Risk Factors, Lifestyle Advice.
-- UseCases: `CheckSymptomsUseCase`, `GetRiskPredictionsUseCase`.
+#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics/src/main/kotlin/com/mediai/enterprise/feature/analytics/domain)
+- **WellnessPlan** model: Daily/Weekly objectives for different health pillars.
+- **HealthTrend** model: Data points for charting (e.g., Steps over time, Weight trend).
+- UseCases: `GetWellnessPlanUseCase`, `GetHealthTrendsUseCase`.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/presentation)
-- **SymptomCheckerScreen**: Multi-select or natural language input for symptoms.
-- **RiskDashboardScreen**: Visual representation (charts/gauges) of predicted risks.
-- **AssessmentDetailScreen**: Detailed breakdown of a specific assessment.
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics/src/main/kotlin/com/mediai/enterprise/feature/analytics/presentation)
+- **HealthCoachScreen**: Displaying the AI-generated wellness plan with interactive goal tracking.
+- **AnalyticsDashboardScreen**: Interactive charts for various health metrics.
 
-#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/presentation/components)
-- **RiskGauge**: A visual circular gauge for probability scores.
-- **UrgencyBanner**: High-visibility banner for emergency redirection.
+#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics/src/main/kotlin/com/mediai/enterprise/feature/analytics/presentation/components)
+- **TrendChart**: Reusable Vico-based chart component for Line and Bar graphs.
+- **WellnessGoalCard**: Checkable item for the daily AI-prescribed goals.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `SYMPTOM_CHECKER_ROUTE` and `RISK_PREDICTION_ROUTE`.
+- Add `HEALTH_COACH_ROUTE` and `ANALYTICS_DASHBOARD_ROUTE`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_AI[:feature:ai] --> C_AI[:core:ai]
-    F_AI --> C_UI[:core:ui]
+    F_Analytics[:feature:analytics] --> C_AI[:core:ai]
+    F_Analytics --> C_UI[:core:ui]
+    F_Analytics --> C_DB[:core:database]
 
-    subgraph AI Diagnostic Pipeline
-        Input[Symptom/Lifestyle Input] --> Prompt[Reasoning Prompt]
-        Prompt --> Gemini[Gemini 1.5]
-        Gemini --> StructuredJSON[Structured Assessment]
-        StructuredJSON --> Logic[Emergency Check Logic]
+    subgraph AI Coaching
+        UserHistory[History + Metrics] --> CoachPrompt[Coach Reasoning]
+        CoachPrompt --> Gemini[Gemini 1.5]
+        Gemini --> WellnessPlan[Structured Wellness Plan]
     end
 
-    Logic --> Banner[Urgency Banner / SOS]
-    Logic --> Dashboard[Risk Dashboard]
+    subgraph Data Visualization
+        DB_Metrics[(Vitals Table)] --> TrendUseCase[Get Trends]
+        TrendUseCase --> Vico[Vico Charting]
+        Vico --> UI_Charts[Analytics UI]
+    end
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify that symptoms like "Chest Pain" trigger the "HIGH" urgency/emergency status in the parser.
-- **Unit Tests**: Verify the parsing of Gemini's JSON output for risk predictions.
+- **Unit Tests**: Verify the parsing of the AI-generated wellness plan.
+- **Unit Tests**: Verify the data transformation logic for Vico charts.
 
 ### Manual Verification
-- Enter "Frequent thirst and fatigue" and verify if "Diabetes" risk is identified.
-- Enter "Severe chest pain" and verify the SOS redirection.
-- Check accessibility of the risk gauges and charts.
+- Verify that the charts correctly display historical data (mocked for now).
+- Check the responsiveness of the Health Coach screen on different devices.
+- Ensure the AI coach takes recent "Emergency" or "High Risk" events into account.

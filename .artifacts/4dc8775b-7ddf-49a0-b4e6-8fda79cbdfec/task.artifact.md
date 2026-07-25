@@ -1,21 +1,20 @@
-# Tasks - Phase 14: AI Symptom Checker & Risk Prediction
+# Tasks - Phase 15: AI Health Coach & Analytics
 
-- `[x]` Setup `:feature:ai` Module
-- `[x]` Implement `:core:ai` Diagnostic Service
-    - `[x]` `MedicalDiagnosticsAi` (Gemini 1.5)
-- `[x]` Implement `:feature:ai` Domain Layer
-    - `[x]` `SymptomAssessment` & `RiskPrediction` models
-    - `[x]` `CheckSymptomsUseCase`
-    - `[x]` `GetRiskPredictionsUseCase`
-- `[x]` Implement `:feature:ai` Data Layer
-    - `[x]` `AiRepository` with implementation
+- `[x]` Update Dependencies in `libs.versions.toml` (Vico Charting Library)
+- `[x]` Setup `:feature:analytics` Module
+- `[x]` Implement `:core:ai` Coaching Service
+    - `[x]` `HealthCoachAi` (Gemini 1.5)
+- `[x]` Implement `:feature:analytics` Domain Layer
+    - `[x]` `WellnessPlan` & `HealthTrend` models
+    - `[x]` `GetWellnessPlanUseCase`
+    - `[x]` `GetHealthTrendsUseCase`
 - `[x]` Implement UI Components
-    - `[x]` `RiskGauge` (Circular probability indicator)
-    - `[x]` `UrgencyBanner` (Emergency alert)
-- `[x]` Implement `:feature:ai` Presentation Layer
-    - `[x]` `SymptomCheckerScreen`
-    - `[x]` `RiskDashboardScreen`
-    - `[x]` `AiViewModel`
-- `[x]` Configure Navigation for AI Features
-- `[x]` Integrate AI shortcuts on Home Dashboard
-- `[ ]` Verify Emergency Redirection and Risk Logic
+    - `[x]` `TrendChart` (Vico integration)
+    - `[x]` `WellnessGoalCard`
+- `[x]` Implement `:feature:analytics` Presentation Layer
+    - `[x]` `HealthCoachScreen`
+    - `[x]` `AnalyticsDashboardScreen`
+    - `[x]` `AnalyticsViewModel`
+- `[x]` Configure Navigation for Analytics & Coach
+- `[x]` Integrate Analytics shortcuts on Home Dashboard
+- `[ ]` Verify Data Visualization and AI Coaching logic

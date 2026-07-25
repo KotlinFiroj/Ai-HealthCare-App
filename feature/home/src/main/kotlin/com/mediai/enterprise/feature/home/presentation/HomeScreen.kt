@@ -28,6 +28,8 @@ fun HomeRoute(
     onNavigateToChat: () -> Unit,
     onNavigateToSymptomChecker: () -> Unit,
     onNavigateToRiskPrediction: () -> Unit,
+    onNavigateToHealthCoach: () -> Unit,
+    onNavigateToAnalytics: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -40,7 +42,9 @@ fun HomeRoute(
         onNavigateToTimeline = onNavigateToTimeline,
         onNavigateToChat = onNavigateToChat,
         onNavigateToSymptomChecker = onNavigateToSymptomChecker,
-        onNavigateToRiskPrediction = onNavigateToRiskPrediction
+        onNavigateToRiskPrediction = onNavigateToRiskPrediction,
+        onNavigateToHealthCoach = onNavigateToHealthCoach,
+        onNavigateToAnalytics = onNavigateToAnalytics
     )
 }
 
@@ -55,7 +59,9 @@ internal fun HomeScreen(
     onNavigateToTimeline: () -> Unit,
     onNavigateToChat: () -> Unit,
     onNavigateToSymptomChecker: () -> Unit,
-    onNavigateToRiskPrediction: () -> Unit
+    onNavigateToRiskPrediction: () -> Unit,
+    onNavigateToHealthCoach: () -> Unit,
+    onNavigateToAnalytics: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -173,6 +179,28 @@ internal fun HomeScreen(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text("Risk Prediction")
+                            }
+                        }
+                    }
+
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Button(
+                                onClick = onNavigateToHealthCoach,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            ) {
+                                Text("AI Health Coach")
+                            }
+                            Button(
+                                onClick = onNavigateToAnalytics,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                            ) {
+                                Text("Health Analytics")
                             }
                         }
                     }
