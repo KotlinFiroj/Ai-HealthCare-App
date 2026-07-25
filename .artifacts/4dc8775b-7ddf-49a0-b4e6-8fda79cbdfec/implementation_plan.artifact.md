@@ -1,93 +1,77 @@
-# Implementation Plan - Phase 21: Backend Foundation & Database Architecture
+# Implementation Plan - Phase 22: Authentication Service & JWT
 
-Establish the server-side infrastructure for **MediAI Enterprise** using FastAPI and a robust PostgreSQL/ChromaDB data layer.
+Implement a secure, production-ready authentication system for the **MediAI Enterprise** backend, providing the foundation for user identity and secure data access.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase transitions the project into a Full-Stack ecosystem.
+> This phase establishes the security perimeter of the backend.
 >
-> - **Tech Stack**: FastAPI (Python 3.11+), PostgreSQL (Relational), ChromaDB (Vector), Redis (Caching/Tasks).
-> - **Containerization**: We will use Docker and Docker Compose to manage the microservices.
-> - **Schema Design**: We will implement a highly normalized schema with audit trails for HIPAA compliance (simulated).
+> - **Security Standards**: We will use **OAuth2 with Password Flow** and **JWT (JSON Web Tokens)** for stateless authentication.
+> - **Password Safety**: Passwords will be hashed using **Bcrypt** with a salt before storage.
+> - **Stateless Session**: All sensitive health APIs will require a valid JWT token in the `Authorization: Bearer` header.
 
 ## Proposed Changes
 
-### Backend Infrastructure (`backend/`)
+### Security Utilities (`backend/app/core`)
 
-#### [NEW] [Project Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend)
-- Initialize FastAPI project with standard directory structure (`app/api`, `app/core`, `app/models`, `app/services`).
+#### [NEW] [security.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/security.py)
+- Implement `get_password_hash` and `verify_password` using `passlib`.
+- Implement `create_access_token` using `python-jose` for JWT generation.
 
-#### [NEW] [docker-compose.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docker-compose.yml)
-- Orchestrate containers for:
-    - **FastAPI App** (Web server)
-    - **PostgreSQL** (Primary DB)
-    - **Redis** (Cache & Celery Broker)
-    - **RabbitMQ** (Message Queue)
-    - **ChromaDB** (Vector Store for RAG)
+### API Schemas (`backend/app/schemas`)
 
-### Data Modeling (`backend/app/models`)
+#### [NEW] [user.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/user.py)
+- Define `UserCreate`, `UserUpdate`, and `UserResponse` Pydantic models.
+- Define `Token` and `TokenData` models.
 
-#### [NEW] [Base & Common](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/base.py)
-- Implement a `BaseModel` with `id`, `created_at`, `updated_at`, and `is_deleted`.
+### API Endpoints (`backend/app/api/v1/endpoints`)
 
-#### [NEW] [Healthcare Entities](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/)
-- `User`: Identity and Auth.
-- `PatientProfile`: Medical history and vitals.
-- `Doctor`: Specialist details and ratings.
-- `Appointment`: Booking and status tracking.
-- `MedicalRecord`: Reports, OCR results, and AI summaries.
-- `Medication`: Prescription and reminder schedules.
+#### [NEW] [auth.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/auth.py)
+- **POST /register**: Create a new user and return user data.
+- **POST /login**: Authenticate user and return an Access Token.
 
-### Core Configuration
+### Middleware & Dependencies (`backend/app/api`)
 
-#### [NEW] [database.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/database.py)
-- Configure SQLAlchemy with asynchronous session management.
+#### [NEW] [deps.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/deps.py)
+- Implement `get_current_user`: A FastAPI dependency that extracts and validates the JWT token, returning the authenticated `User` model.
 
-#### [NEW] [config.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/config.py)
-- Pydantic-based settings for environment variables (DB_URL, GEMINI_API_KEY, etc.).
+### Main App Updates
 
-## Database Schema (ER Diagram)
+#### [MODIFY] [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py)
+- Include the `auth` router in the FastAPI application.
+
+## Authentication Sequence
 
 ```mermaid
-erDiagram
-    USER ||--o1 PATIENT_PROFILE : "has"
-    USER ||--o{ APPOINTMENT : "books"
-    DOCTOR ||--o{ APPOINTMENT : "attends"
-    PATIENT_PROFILE ||--o{ MEDICAL_RECORD : "owns"
-    PATIENT_PROFILE ||--o{ MEDICATION : "prescribed"
-    MEDICAL_RECORD ||--o{ REPORT_ANALYSIS : "contains"
+sequenceDiagram
+    participant User as Mobile App
+    participant API as FastAPI Backend
+    participant DB as PostgreSQL
 
-    USER {
-        uuid id
-        string email
-        string hashed_password
-        datetime created_at
-    }
+    User->>API: POST /register (Email, Pass)
+    API->>API: Hash Password
+    API->>DB: Save User
+    API-->>User: User Created
 
-    PATIENT_PROFILE {
-        uuid id
-        uuid user_id
-        string blood_group
-        string allergies
-    }
+    User->>API: POST /login (Email, Pass)
+    API->>DB: Fetch User
+    API->>API: Verify Hash
+    API->>API: Generate JWT
+    API-->>User: Return Token
 
-    MEDICAL_RECORD {
-        uuid id
-        uuid patient_id
-        string title
-        string category
-        string file_url
-        string ocr_text
-    }
+    User->>API: GET /me (Bearer Token)
+    API->>API: Validate JWT
+    API-->>User: User Profile Data
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- Run database migrations and verify schema creation in PostgreSQL.
-- Unit tests for SQLAlchemy models to ensure constraints and relationships.
+- **Unit Tests**: Verify hashing and password verification.
+- **Integration Tests**: Test the full registration and login flow using a test database.
 
 ### Manual Verification
-- Verify Docker containers start correctly using `docker-compose up`.
-- Inspect the FastAPI Swagger UI (`/docs`) to ensure the foundation is alive.
+- Use the Swagger UI (`/docs`) to register a test user.
+- Log in and verify that a valid JWT token is returned.
+- Test a protected endpoint with the received token.

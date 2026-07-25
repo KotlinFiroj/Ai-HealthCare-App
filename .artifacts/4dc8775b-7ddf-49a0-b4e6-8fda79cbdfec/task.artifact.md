@@ -1,19 +1,15 @@
-# Tasks - Phase 21: Backend Foundation & Database Architecture
+# Tasks - Phase 22: Authentication Service & JWT
 
-- `[x]` Setup Backend Project Structure
-    - `[x]` Create `backend/app` directories
-    - `[x]` Create `requirements.txt`
-- `[x]` Configure Infrastructure (Docker)
-    - `[x]` Create `docker-compose.yml`
-    - `[x]` Create `Dockerfile` for FastAPI
-- `[x]` Implement Database Models (SQLAlchemy)
-    - `[x]` `Base` model with audit fields
-    - `[x]` `User` & `PatientProfile` models
-    - `[x]` `Doctor` & `Appointment` models
-    - `[x]` `MedicalRecord` & `Medication` models
-- `[x]` Configure Core Backend
-    - `[x]` `config.py` (Pydantic settings)
-    - `[x]` `database.py` (Async SQLAlchemy setup)
-- `[x]` Initialize Main App Entry Point
-    - `[x]` `main.py`
-- `[ ]` Verify Container Orchestration and DB Connectivity
+- `[x]` Implement Security Utilities
+    - `[x]` `get_password_hash` & `verify_password`
+    - `[x]` `create_access_token`
+- `[x]` Define API Schemas
+    - `[x]` `UserCreate`, `UserResponse`
+    - `[x]` `Token`, `TokenData`
+- `[x]` Implement API Endpoints
+    - `[x]` `POST /register`
+    - `[x]` `POST /login` (OAuth2 token)
+- `[x]` Implement Auth Dependencies
+    - `[x]` `get_current_user`
+- `[x]` Register Auth Router in `main.py`
+- `[ ]` Verify Auth Flow with Swagger UI
