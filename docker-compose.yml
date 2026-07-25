@@ -47,6 +47,21 @@ services:
     ports:
       - "8888:8888"
 
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mediai_worker
+    restart: always
+    command: celery -A app.core.celery_app worker --loglevel=info
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-mediai_db}
+      REDIS_URL: redis://redis:6379/0
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+
 volumes:
   postgres_data:
   chroma_data:

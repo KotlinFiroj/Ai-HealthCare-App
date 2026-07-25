@@ -1,40 +1,44 @@
-# Walkthrough - Phase 23: Patient & Doctor Services
+# Walkthrough - Phase 24: OCR & AI Services (Async Workers)
 
-We have successfully implemented the core healthcare business services for the **MediAI Enterprise** backend. This phase establishes the data flow for patient profiles, doctor discovery, and the appointment booking lifecycle.
+We have successfully implemented the asynchronous background processing pipeline for medical reports using **Celery**, **Redis**, and **Gemini 1.5 Flash**.
 
 ## Changes Made
 
-### 1. Healthcare Data Schemas (`:schemas`)
-- **Patient Profiles**: Defined [patient.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/patient.py) to handle clinical metadata like blood group and allergies.
-- **Doctor Directory**: Created [doctor.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/doctor.py) for managing physician professional details and specializations.
-- **Appointments**: Implemented [appointment.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/appointment.py) to define the structure for medical booking requests and responses.
+### 1. Infrastructure & Orchestration
+- **Celery Worker**: Added a dedicated `worker` service to [docker-compose.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docker-compose.yml). This container runs the Celery process, allowing us to perform heavy AI analysis without blocking the main web server.
+- **Task Broker**: Configured Redis as the message broker, facilitating communication between the FastAPI backend and the Celery workers.
 
-### 2. Service Layer Implementation (`:services`)
-- **Encapsulated Logic**: Introduced a dedicated service layer to keep API endpoints lean and reusable.
-- **Patient Service**: Handles profile creation and updates, ensuring strict ownership by the authenticated user.
-- **Doctor Service**: Provides advanced search capabilities with support for partial name matching and specialized filtering.
-- **Appointment Service**: Manages the booking process and retrieves historical/upcoming appointments for the user.
+### 2. Core Task Engine
+- **Celery Configuration**: Created [celery_app.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/celery_app.py) to initialize the task queue and enable auto-discovery of tasks across the project.
+- **AI Integration**: Developed [ai_engine.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/ai_engine.py), a wrapper for the **Google Generative AI SDK**. It handles medical reasoning and transforms raw text into structured JSON analysis.
 
-### 3. API Endpoints (`:api:v1:endpoints`)
-- **Patient Profile**: Implemented `GET/POST/PUT /patients/me/profile` for personal health record management.
-- **Doctor Discovery**: Developed `GET /doctors/` for searchable access to the healthcare provider network.
-- **Booking Hub**: Created `POST/GET /appointments/` to facilitate the orchestration of medical consultations.
+### 3. Background AI Pipeline
+- **Medical Tasks**: Implemented [medical_tasks.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/tasks/medical_tasks.py) containing the `process_medical_report_task`. This task performs a multi-step workflow:
+    1. Retrieves the report from PostgreSQL.
+    2. Simulates OCR extraction.
+    3. Calls Gemini for clinical interpretation.
+    4. Updates the database with the AI-generated summary.
 
-### 4. Application Integration
-- **Router Registration**: Updated the main [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py) to include the new healthcare service routers, making them accessible via the standard `/api/v1` prefix.
+### 4. Reports API & Services
+- **Asynchronous Upload**: Created `POST /reports/` which saves report metadata and immediately dispatches a background task, returning a response to the user within milliseconds.
+- **Report Management**: Developed endpoints to list and retrieve detailed reports, including the AI-processed insights.
+- **Service Layer**: Implemented [report_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/report_service.py) to encapsulate the logic of triggering background work.
 
 ## Architecture Highlights
-- **Service Layer Pattern**: By isolating business logic into services, we've made the backend more testable and maintained a clean separation from the transport (API) layer.
-- **Security-First Data Access**: Every patient and appointment endpoint utilizes the `get_current_user` dependency, ensuring that sensitive medical data is only accessible to its rightful owner.
+- **Non-Blocking AI**: By offloading Gemini calls to Celery, the backend remains highly responsive, even when processing hundreds of complex medical documents simultaneously.
+- **Resilient Processing**: The worker includes a retry policy with exponential backoff, ensuring that transient API errors or network issues don't result in lost analysis.
 
 ## Verification Results
 
 ### API Interface
-- Verified that all new routes are correctly mapped and documented in the automatically generated Swagger UI.
-- Confirmed that the `PatientProfileUpdate` schema correctly supports partial updates (patch-like behavior).
+- Verified that the `reports` endpoints are correctly documented and accessible in the Swagger UI.
+- Confirmed that the `ReportResponse` schema correctly includes the `ai_summary` field.
 
 > [!TIP]
-> The doctor search service uses Case-Insensitive ILIKE queries in PostgreSQL, ensuring a user-friendly search experience on the mobile app.
+> To monitor background tasks in real-time, you can use the Celery logs:
+> ```bash
+> docker-compose logs -f worker
+> ```
 
 ## Next Steps
-In **Phase 24: OCR & AI Services**, we will implement the background workers (Celery) to handle heavy-duty medical document processing and integrate the Gemini-powered interpretation engine.
+In **Phase 25: RAG Pipeline with ChromaDB**, we will implement the vector search engine to allow the AI Medical Chatbot to retrieve relevant medical guidelines from a persistent knowledge base.

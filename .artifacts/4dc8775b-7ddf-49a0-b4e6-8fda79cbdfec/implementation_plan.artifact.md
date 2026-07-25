@@ -1,87 +1,80 @@
-# Implementation Plan - Phase 23: Patient & Doctor Services
+# Implementation Plan - Phase 24: OCR & AI Services (Async Workers)
 
-Implement the core healthcare management services for **MediAI Enterprise**, enabling patient profile management, doctor discovery, and appointment orchestration.
+Implement high-performance, asynchronous processing for medical documents and AI-driven analysis using **Celery**, **Redis**, and **Gemini 1.5**.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase implements the primary business logic for the healthcare platform.
+> This phase introduces background task orchestration, which is essential for heavy-duty AI operations.
 >
-> - **Data Ownership**: Patient profiles are strictly linked to the authenticated user. A user can only view/edit their own medical profile.
-> - **Search Performance**: Doctor search will support partial name matching and specialization filtering.
-> - **Appointment Logic**: Booking an appointment will verify the doctor's existence and store the scheduled time. (Advanced availability logic will be added in future AI phases).
+> - **Task Queue**: We will use **Celery** with **Redis** as a broker to handle long-running OCR and AI summarization tasks without blocking the main API thread.
+> - **AI Integration**: Integration with the **Google Generative AI (Gemini)** Python SDK on the server side.
+> - **OCR Engine**: Using **Tesseract** (or simulated via AI) for server-side text extraction from medical images/PDFs.
+> - **Multimodal Support**: The system will support both image and text inputs for medical report interpretation.
 
 ## Proposed Changes
 
-### API Schemas (`backend/app/schemas`)
+### Infrastructure Updates (`/`)
 
-#### [NEW] [patient.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/patient.py)
-- `PatientProfileCreate`, `PatientProfileUpdate`, `PatientProfileResponse`.
+#### [MODIFY] [docker-compose.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docker-compose.yml)
+- Add a `worker` service to run Celery.
+- Ensure `redis` is correctly linked to both `backend` and `worker`.
 
-#### [NEW] [doctor.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/doctor.py)
-- `DoctorCreate`, `DoctorResponse`.
+### Core AI & Task Logic (`backend/app/core`)
 
-#### [NEW] [appointment.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/appointment.py)
-- `AppointmentCreate`, `AppointmentUpdate`, `AppointmentResponse`.
+#### [NEW] [celery_app.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/celery_app.py)
+- Initialize and configure the Celery application.
 
-### Service Layer (`backend/app/services`)
+#### [NEW] [ai_engine.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/ai_engine.py)
+- Wrapper for Gemini 1.5 Pro/Flash to handle medical reasoning and summarization.
 
-#### [NEW] [patient_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/patient_service.py)
-- Business logic for managing patient profiles and medical metadata.
+### Background Tasks (`backend/app/tasks`)
 
-#### [NEW] [doctor_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/doctor_service.py)
-- Logic for searching and filtering the doctor directory.
+#### [NEW] [medical_tasks.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/tasks/medical_tasks.py)
+- `process_medical_report_task`: Handles OCR -> Analysis -> DB Update.
+- `generate_health_summary_task`: Chronological analysis of patient history.
 
-#### [NEW] [appointment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/appointment_service.py)
-- Logic for booking and retrieving appointments.
+### API & Services (`backend/app/api/v1/endpoints`)
 
-### API Endpoints (`backend/app/api/v1/endpoints`)
+#### [NEW] [reports.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/reports.py)
+- `POST /upload`: Upload a document and trigger an async processing task.
+- `GET /{id}/status`: Check the status of a background task.
 
-#### [NEW] [patients.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/patients.py)
-- `GET /me/profile`: Fetch current user's profile.
-- `PUT /me/profile`: Update medical details.
+#### [NEW] [report_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/report_service.py)
+- Manage file storage metadata and task initiation.
 
-#### [NEW] [doctors.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/doctors.py)
-- `GET /`: List and search doctors.
-- `GET /{id}`: Fetch doctor details.
+### Schemas (`backend/app/schemas`)
 
-#### [NEW] [appointments.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/appointments.py)
-- `POST /`: Book a new appointment.
-- `GET /`: List user's appointments.
-
-### Main App Updates
-
-#### [MODIFY] [main.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/main.py)
-- Register `patients`, `doctors`, and `appointments` routers.
+#### [NEW] [report.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/schemas/report.py)
+- `ReportUploadResponse`, `ReportStatus`, `ReportAnalysisResult`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    User([Authenticated User]) --> API
+    User[Mobile App] -->|POST /upload| API[FastAPI Server]
+    API -->|Save Metadata| DB[(PostgreSQL)]
+    API -->|Dispatch Task| Redis[(Redis Broker)]
+    Redis -->|Pick Up| Worker[Celery Worker]
 
-    subgraph API Endpoints
-        P[Patient API]
-        D[Doctor API]
-        A[Appointment API]
+    subgraph AI Pipeline
+        Worker -->|Image| OCR[OCR Engine]
+        OCR -->|Raw Text| Gemini[Gemini 1.5 API]
+        Gemini -->|JSON Result| Worker
     end
 
-    P --> PS[Patient Service]
-    D --> DS[Doctor Service]
-    A --> AS[Appointment Service]
-
-    PS --> DB[(PostgreSQL)]
-    DS --> DB
-    AS --> DB
+    Worker -->|Update Results| DB
+    User -->|GET /status| API
+    API -->|Check Status| DB
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify that `PatientProfileUpdate` correctly updates fields in the database.
-- **Integration Tests**: Verify that searching for "Cardiologist" returns the correct doctors.
+- **Task Tests**: Verify that `process_medical_report_task` correctly updates the database upon completion.
+- **AI Tests**: Mock Gemini API responses and verify the parsing of the structured JSON output.
 
 ### Manual Verification
-- Create a patient profile via Swagger.
-- Search for doctors by specialization.
-- Book an appointment and verify it appears in the user's appointment list.
+- Upload a sample medical image via Swagger.
+- Monitor Celery logs to ensure the task is picked up and processed.
+- Verify that the processed AI summary appears in the database and is accessible via the API.
