@@ -20,11 +20,15 @@ class BaselineProfileGenerator {
         packageName = "com.mediai.enterprise",
         includeInStartupProfile = true
     ) {
-        // Start the app and perform basic actions to capture hot code paths
+        // 1. Startup Flow
         pressHome()
         startActivityAndWait()
 
-        // Example: Navigate through critical screens
-        // Note: Real interactions depend on UI availability during generation
+        // 2. Dashboard Interaction
+        device.waitForIdle()
+
+        // 3. Simulated User Journey
+        // In a full production setup, we would use UI Automator here to navigate
+        // to Chat, Reports, and Appointments to capture performance paths.
     }
 }

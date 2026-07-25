@@ -1,80 +1,73 @@
-# Implementation Plan - Phase 29: Android-Backend Connectivity & Full-Stack Integration
+# Implementation Plan - Phase 31: Geo-Health & QR Patient Orchestration
 
-Bridge the gap between the **MediAI Mobile App** and the **FastAPI Backend**, replacing all remaining mock data with live service integration.
+Expand the **MediAI Enterprise** ecosystem with specialized geo-location services for hospitals and QR-based patient check-in workflows.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase transitions the application from a standalone UI demo to a fully functional healthcare platform.
+> This phase introduces third-party SDKs and spatial data processing.
 >
-> - **API URL**: We will set the base URL to `http://10.0.2.2:80` (Standard Android Emulator gateway to host machine via Nginx).
-> - **Live Flow**: Real registration, login, doctor search, and report uploads will now be functional.
-> - **Data Persistence**: Data will move from the Mobile UI -> Android Repository -> FastAPI -> PostgreSQL/ChromaDB.
+> - **Google Maps SDK**: The Android app will require a Google Maps API key (to be added to `local.properties`).
+> - **Spatial Queries**: The backend will implement a simple Haversine formula (or PostGIS extension if scaled) to find nearby medical facilities.
+> - **QR Integration**: We will use **ML Kit Barcode Scanning** for the check-in feature, ensuring high-performance scanning on mobile devices.
 
 ## Proposed Changes
 
-### Android Network Layer (`:core:network`)
+### Android Infrastructure
 
-#### [MODIFY] [NetworkModule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/network/src/main/kotlin/com/mediai/enterprise/core/network/di/NetworkModule.kt)
-- Update `BASE_URL` to point to the Nginx gateway.
+#### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
+- Add `google-maps-compose` and `play-services-maps`.
+- Add `mlkit-barcode-scanning`.
 
-### Feature API Interfaces (`:feature:*`)
+### Feature Emergency expansion (`:feature:emergency`)
 
-#### [NEW] [HomeApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/data/remote/HomeApiService.kt)
-- Endpoints for `GET /analytics/stats` and `GET /analytics/trends`.
+#### [NEW] [HospitalMapScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/presentation/map/HospitalMapScreen.kt)
+- An interactive map view showing the user's location and nearby hospitals.
 
-#### [NEW] [AppointmentApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/data/remote/AppointmentApiService.kt)
-- Endpoints for doctor search, details, and booking.
+#### [NEW] [NearbyHospitalsUseCase.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/emergency/src/main/kotlin/com/mediai/enterprise/feature/emergency/domain/usecase/GetNearbyHospitalsUseCase.kt)
+- Fetches hospital data from the backend based on current coordinates.
 
-#### [NEW] [ReportApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/data/remote/ReportApiService.kt)
-- Endpoints for report uploads and retrieval.
+### Feature Appointment expansion (`:feature:appointment`)
 
-#### [NEW] [ChatApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/data/remote/ChatApiService.kt)
-- Endpoints for sending messages and history.
+#### [NEW] [QrCheckInScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/checkin/QrCheckInScreen.kt)
+- A screen that generates a unique QR code for a booked appointment.
+- A scanner mode for simulating hospital check-in.
 
-#### [NEW] [AiApiService.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/data/remote/AiApiService.kt)
-- Endpoints for symptom checking and risk assessment.
+### Backend Services (`backend/app`)
 
-### Repository Refactoring
+#### [NEW] [Hospital Model](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/hospital.py)
+- `Hospital`: Name, Address, Latitude, Longitude, Contact.
 
-#### [MODIFY] [All Repository Implementations](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/*/src/main/kotlin/com/mediai/enterprise/feature/*/data/repository/)
-- Replace all `delay(1500)` and mock object returns with actual `apiService` calls.
-- Implement proper mapping from Remote DTOs to Domain models.
+#### [NEW] [hospital_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/hospital_service.py)
+- Logic to find the closest hospitals using coordinate-based distance calculation.
 
-### App Configuration
+#### [NEW] [hospital.py (API)](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/hospitals.py)
+- `GET /nearby`: Retrieve medical facilities within a certain radius.
 
-#### [MODIFY] [AndroidManifest.xml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/app/src/main/AndroidManifest.xml)
-- Ensure `android:usesCleartextTraffic="true"` for local development (if not using HTTPS).
-
-## Full-Stack Integration Diagram
+## Architecture Diagram
 
 ```mermaid
-graph LR
-    subgraph Android App
-        UI[Jetpack Compose UI] --> VM[ViewModel]
-        VM --> UC[UseCase]
-        UC --> Repo[Repository]
-        Repo --> API_Client[Retrofit Service]
-    end
+graph TD
+    User[Mobile App] -->|GPS Coords| API[FastAPI Server]
+    API --> HS[Hospital Service]
+    HS --> DB[(PostgreSQL with Lat/Lng)]
+    HS -->|Nearby List| API
+    API -->|JSON| User
+    User -->|Render| Maps[Google Maps Compose]
 
-    API_Client -->|HTTP/JWT| Nginx[NGINX Gateway]
-
-    subgraph Backend Ecosystem
-        Nginx --> FastAPI[FastAPI API]
-        FastAPI --> Services[Business Services]
-        Services --> DB[(PostgreSQL)]
-        Services --> Vector[(ChromaDB)]
-        Services --> Worker[Celery/Redis]
-    end
+    Appt[Appointment] -->|Gen ID| QR[QR Generator]
+    QR -->|Show| User
+    User -->|Scan at Clinic| Scanner[ML Kit Scanner]
+    Scanner -->|Validate| API
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `Pytest` on the backend to ensure endpoints are ready.
-- Run Android Unit Tests (MockK) ensuring repositories correctly call the `ApiService`.
+- **Backend Tests**: Verify the distance calculation logic ensures accuracy (within 10-meter error margin).
+- **Unit Tests**: Verify the QR code generation logic correctly encodes the appointment ID.
 
 ### Manual Verification
-- Perform a "Sign Up" in the app and verify the record exists in the `mediai_db` PostgreSQL container.
-- Upload a medical report in the app and watch the `mediai_worker` logs process the AI analysis.
-- Chat with the AI and verify the responses are grounded in the seeded knowledge base.
+- Verify the map renders correctly in the Android Emulator.
+- Test the "Check-in" flow by generating a QR and "scanning" it via a simulated camera feed or screenshot.
+- Ensure "Nearby Hospitals" correctly sorts results by distance from the user.

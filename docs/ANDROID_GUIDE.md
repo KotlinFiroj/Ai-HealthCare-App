@@ -17,6 +17,10 @@
 
 ## CI/CD
 - **Platform**: GitHub Actions.
-- **Workflows**:
-    - `android.yml`: Quality checks and debug builds on every push.
-    - `release.yml`: Tag-based production builds and automated distribution.
+- **Verification Workflow**: Automated parallel jobs for Lint, Test, and Build on every PR.
+- **Release Workflow**: Automated tagging, release note generation, and distribution to Firebase App Distribution upon `v*` tag push.
+
+## Best Practices
+1. **Unidirectional Data Flow (UDF)**: ViewModels expose a single `uiState` flow.
+2. **Dependency Injection**: Use Hilt for all constructor injection to maintain testability.
+3. **Async Programming**: Coroutines for background tasks and Flow for reactive streams.

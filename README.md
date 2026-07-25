@@ -56,6 +56,22 @@ This project demonstrates the complete lifecycle of a Fortune 500 healthcare app
 4. **DevOps**: Automated CI/CD pipelines with quality guardrails.
 5. **Observability**: Remote monitoring and performance tracking.
 
+## Future Roadmap
+- **Real-time AI Streaming**: Implement WebSocket support for streaming AI responses.
+- **Multilingual Support**: Expand the knowledge base to support non-English clinical guidelines.
+- **Wearable Integration**: Direct sync with Health Connect and smartwatches.
+- **Video Consultation**: Real-time WebRTC-based video calls within the Appointment feature.
+
+## How to Contribute
+1. **Branching**: Use `feat/`, `fix/`, or `docs/` prefixes for your branches.
+2. **Coding Standards**: Ensure all new code passes `./gradlew detekt ktlintCheck`.
+3. **Documentation**: Update the relevant guide in `docs/` if you modify core infrastructure.
+
+## License
+This project is for educational purposes. All medical data is simulated.
+
+# End of Implementation.
+
 ### Multi-Module Structure
 - `:app`: Main entry point and DI root.
 - `:feature:*`: Independent feature modules (e.g., `:feature-auth`, `:feature-home`).
