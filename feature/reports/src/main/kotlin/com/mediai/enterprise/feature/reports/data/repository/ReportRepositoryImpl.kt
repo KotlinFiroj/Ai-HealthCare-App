@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.mediai.enterprise.core.ai.MedicalAiParser
 import com.mediai.enterprise.core.ai.MedicalOcrAnalyzer
 import com.mediai.enterprise.core.ai.MedicalReportSummarizer
+import com.mediai.enterprise.core.data.sync.SyncManager
 import com.mediai.enterprise.feature.reports.domain.model.*
 import com.mediai.enterprise.feature.reports.domain.repository.ReportRepository
 import kotlinx.coroutines.delay
@@ -17,7 +18,8 @@ import javax.inject.Inject
 class ReportRepositoryImpl @Inject constructor(
     private val ocrAnalyzer: MedicalOcrAnalyzer,
     private val aiParser: MedicalAiParser,
-    private val reportSummarizer: MedicalReportSummarizer
+    private val reportSummarizer: MedicalReportSummarizer,
+    private val syncManager: SyncManager
 ) : ReportRepository {
 
     private val mockReports = listOf(
@@ -47,16 +49,16 @@ class ReportRepositoryImpl @Inject constructor(
 
     override suspend fun uploadReport(title: String, category: String, filePath: String): Result<MedicalReport> {
         delay(1000) // Mock upload
-        return Result.success(
-            MedicalReport(
-                id = UUID.randomUUID().toString(),
-                title = title,
-                category = ReportCategory.valueOf(category),
-                date = LocalDateTime.now(),
-                fileUrl = filePath,
-                syncStatus = SyncStatus.SYNCED
-            )
+        val report = MedicalReport(
+            id = UUID.randomUUID().toString(),
+            title = title,
+            category = ReportCategory.valueOf(category),
+            date = LocalDateTime.now(),
+            fileUrl = filePath,
+            syncStatus = SyncStatus.SYNCED
         )
+        syncManager.triggerSync()
+        return Result.success(report)
     }
 
     override suspend fun scanAndParsePrescription(bitmap: Bitmap): Result<PrescriptionData> {

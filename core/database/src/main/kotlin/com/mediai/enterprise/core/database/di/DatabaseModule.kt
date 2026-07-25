@@ -7,11 +7,13 @@ import com.mediai.enterprise.core.database.dao.ChatDao
 import com.mediai.enterprise.core.database.dao.EmergencyDao
 import com.mediai.enterprise.core.database.dao.HealthDao
 import com.mediai.enterprise.core.database.dao.MedicineDao
+import com.mediai.enterprise.core.security.KeyStoreManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import net.sqlcipher.database.SupportFactory
 import javax.inject.Singleton
 
 @Module
@@ -20,12 +22,20 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): MediAIDatabase {
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+        keyStoreManager: KeyStoreManager
+    ): MediAIDatabase {
+        val passphrase = keyStoreManager.getOrCreateDbKey()
+        val factory = SupportFactory(passphrase)
+
         return Room.databaseBuilder(
             context,
             MediAIDatabase::class.java,
             "mediai_database"
-        ).build()
+        )
+            .openHelperFactory(factory)
+            .build()
     }
 
     @Provides

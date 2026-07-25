@@ -11,5 +11,7 @@ data class ReportEntity(
     val date: Long,
     val fileUrl: String,
     val summary: String? = null,
-    val syncStatus: String
+    val syncStatus: String,
+    val lastUpdated: Long = System.currentTimeMillis(),
+    val isDirty: Boolean = false
 )

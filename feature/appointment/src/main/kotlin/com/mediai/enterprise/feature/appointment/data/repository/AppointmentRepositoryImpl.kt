@@ -1,5 +1,6 @@
 package com.mediai.enterprise.feature.appointment.data.repository
 
+import com.mediai.enterprise.core.data.sync.SyncManager
 import com.mediai.enterprise.feature.appointment.domain.model.*
 import com.mediai.enterprise.feature.appointment.domain.repository.AppointmentRepository
 import kotlinx.coroutines.delay
@@ -11,7 +12,9 @@ import java.time.LocalTime
 import java.util.UUID
 import javax.inject.Inject
 
-class AppointmentRepositoryImpl @Inject constructor() : AppointmentRepository {
+class AppointmentRepositoryImpl @Inject constructor(
+    private val syncManager: SyncManager
+) : AppointmentRepository {
 
     private val mockDoctors = listOf(
         Doctor("1", "Dr. Sarah Smith", "Cardiologist", 4.8, 120, 15, "City General Hospital", "Expert in cardiac surgery and heart health."),
@@ -46,6 +49,7 @@ class AppointmentRepositoryImpl @Inject constructor() : AppointmentRepository {
 
     override suspend fun bookAppointment(doctorId: String, slot: TimeSlot): Result<Appointment> {
         delay(1000)
+        syncManager.triggerSync()
         return Result.success(
             Appointment(
                 id = UUID.randomUUID().toString(),

@@ -10,5 +10,7 @@ data class AppointmentEntity(
     val specialization: String,
     val dateTime: Long,
     val status: String,
-    val type: String
+    val type: String,
+    val lastUpdated: Long = System.currentTimeMillis(),
+    val isDirty: Boolean = false
 )

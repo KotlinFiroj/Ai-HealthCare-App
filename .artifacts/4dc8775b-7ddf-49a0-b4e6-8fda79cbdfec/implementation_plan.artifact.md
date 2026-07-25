@@ -1,80 +1,71 @@
-# Implementation Plan - Phase 15: AI Health Coach & Analytics
+# Implementation Plan - Phase 16: Security & Offline Sync
 
-Implement personalized wellness planning and interactive health data visualization for **MediAI Enterprise**.
+Implement enterprise-grade local data security and a robust background synchronization engine for **MediAI Enterprise**.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase focuses on long-term health management and data-driven insights.
+> This phase focuses on data integrity and privacy at rest and in transit.
 >
-> - **AI Coaching**: We will use Gemini to generate personalized "Wellness Blueprints" (Diet, Exercise, Sleep, Stress) based on the user's health timeline and metrics.
-> - **Data Visualization**: We will integrate the **Vico** charting library to create interactive Line and Bar charts for health trends.
-> - **New Module**: Creating `:feature:analytics` to house the coaching and data visualization screens.
+> - **Database Encryption**: We will integrate **SQLCipher** with Room to encrypt the entire local database using AES-256.
+> - **Offline-First Sync**: We will implement a "Delta Sync" strategy using **WorkManager**, ensuring local changes are pushed to the server and remote updates are pulled seamlessly.
+> - **Secure Key Management**: The database encryption key will be stored securely in the **Android Keystore**.
 
 ## Proposed Changes
 
 ### Build Configuration
 
 #### [MODIFY] [libs.versions.toml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/gradle/libs.versions.toml)
-- Add **Vico** (Compose charting library) dependencies.
+- Add **SQLCipher** and **SQLite KTX** dependencies.
 
-### Core AI (`:core:ai`)
+### Core Database (`:core:database`)
 
-#### [NEW] [HealthCoachAi.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/HealthCoachAi.kt)
-- Specialized service to generate personalized wellness plans using **Gemini 1.5**.
-- Plans include: Daily Goals, Nutritional Focus, Exercise Routine, and Mental Health tips.
+#### [MODIFY] [DatabaseModule.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/di/DatabaseModule.kt)
+- Configure `SupportFactory` for Room using a dynamic key from Keystore.
 
-### Feature Analytics (`:feature:analytics`) [NEW MODULE]
+### Core Data (`:core:data`) [NEW SERVICES]
 
-#### [NEW] [Feature Analytics Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics)
-- Create `:feature:analytics` module using convention plugins.
+#### [NEW] [SyncWorker.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/sync/SyncWorker.kt)
+- A `CoroutineWorker` that orchestrates the sync process for all entities (Reports, Appointments, Vitals).
 
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics/src/main/kotlin/com/mediai/enterprise/feature/analytics/domain)
-- **WellnessPlan** model: Daily/Weekly objectives for different health pillars.
-- **HealthTrend** model: Data points for charting (e.g., Steps over time, Weight trend).
-- UseCases: `GetWellnessPlanUseCase`, `GetHealthTrendsUseCase`.
+#### [NEW] [SyncManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/sync/SyncManager.kt)
+- Responsible for triggering syncs based on network availability and data changes.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics/src/main/kotlin/com/mediai/enterprise/feature/analytics/presentation)
-- **HealthCoachScreen**: Displaying the AI-generated wellness plan with interactive goal tracking.
-- **AnalyticsDashboardScreen**: Interactive charts for various health metrics.
+### Entity Updates
 
-#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/analytics/src/main/kotlin/com/mediai/enterprise/feature/analytics/presentation/components)
-- **TrendChart**: Reusable Vico-based chart component for Line and Bar graphs.
-- **WellnessGoalCard**: Checkable item for the daily AI-prescribed goals.
+#### [MODIFY] [All Room Entities](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/)
+- Add `lastUpdated` timestamp and `isDirty` flag to all entities to support delta sync.
 
-### Navigation (`:core:navigation`)
+### Security Utilities (`:core:security`)
 
-#### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `HEALTH_COACH_ROUTE` and `ANALYTICS_DASHBOARD_ROUTE`.
+#### [NEW] [KeyStoreManager.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/KeyStoreManager.kt)
+- Manage generation and retrieval of the database encryption key using Android Keystore.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Analytics[:feature:analytics] --> C_AI[:core:ai]
-    F_Analytics --> C_UI[:core:ui]
-    F_Analytics --> C_DB[:core:database]
+    App[MediAI App] --> SyncManager[SyncManager]
+    SyncManager --> WM[WorkManager]
+    WM --> SyncWorker[SyncWorker]
 
-    subgraph AI Coaching
-        UserHistory[History + Metrics] --> CoachPrompt[Coach Reasoning]
-        CoachPrompt --> Gemini[Gemini 1.5]
-        Gemini --> WellnessPlan[Structured Wellness Plan]
+    subgraph Sync Engine
+        SyncWorker --> LocalDB[(SQLCipher Encrypted Room)]
+        SyncWorker --> API[Remote FastAPI Backend]
     end
 
-    subgraph Data Visualization
-        DB_Metrics[(Vitals Table)] --> TrendUseCase[Get Trends]
-        TrendUseCase --> Vico[Vico Charting]
-        Vico --> UI_Charts[Analytics UI]
+    subgraph Security
+        LocalDB -.-> KeyStore[Android Keystore]
     end
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify the parsing of the AI-generated wellness plan.
-- **Unit Tests**: Verify the data transformation logic for Vico charts.
+- **Security Tests**: Verify that the database file cannot be read without the correct SQLCipher key.
+- **Sync Tests**: Verify that "Dirty" items are correctly identified and processed by the `SyncWorker`.
 
 ### Manual Verification
-- Verify that the charts correctly display historical data (mocked for now).
-- Check the responsiveness of the Health Coach screen on different devices.
-- Ensure the AI coach takes recent "Emergency" or "High Risk" events into account.
+- Modify data in offline mode, then enable Wi-Fi and verify the sync triggers.
+- Check the app's performance during background synchronization.
+- Verify that clearing app data also clears the secure keys in Keystore (standard behavior).

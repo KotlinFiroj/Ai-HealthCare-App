@@ -1,20 +1,15 @@
-# Tasks - Phase 15: AI Health Coach & Analytics
+# Tasks - Phase 16: Security & Offline Sync
 
-- `[x]` Update Dependencies in `libs.versions.toml` (Vico Charting Library)
-- `[x]` Setup `:feature:analytics` Module
-- `[x]` Implement `:core:ai` Coaching Service
-    - `[x]` `HealthCoachAi` (Gemini 1.5)
-- `[x]` Implement `:feature:analytics` Domain Layer
-    - `[x]` `WellnessPlan` & `HealthTrend` models
-    - `[x]` `GetWellnessPlanUseCase`
-    - `[x]` `GetHealthTrendsUseCase`
-- `[x]` Implement UI Components
-    - `[x]` `TrendChart` (Vico integration)
-    - `[x]` `WellnessGoalCard`
-- `[x]` Implement `:feature:analytics` Presentation Layer
-    - `[x]` `HealthCoachScreen`
-    - `[x]` `AnalyticsDashboardScreen`
-    - `[x]` `AnalyticsViewModel`
-- `[x]` Configure Navigation for Analytics & Coach
-- `[x]` Integrate Analytics shortcuts on Home Dashboard
-- `[ ]` Verify Data Visualization and AI Coaching logic
+- `[x]` Update Dependencies in `libs.versions.toml` (SQLCipher & SQLite KTX)
+- `[x]` Implement `:core:security` Key Management
+    - `[x]` `KeyStoreManager` (Database Key Generation)
+- `[x]` Update Room Entities for Sync
+    - `[x]` Add `lastUpdated` and `isDirty` to `MedicineEntity`, `ReportEntity`, `AppointmentEntity`
+- `[x]` Configure Encrypted Room Database
+    - `[x]` Update `MediAIDatabase`
+    - `[x]` Configure `SupportFactory` in `DatabaseModule`
+- `[x]` Implement Offline Sync Engine (`:core:data`)
+    - `[x]` `SyncWorker` (WorkManager)
+    - `[x]` `SyncManager` (Orchestrator)
+- `[x]` Update Repositories to trigger Sync
+- `[ ]` Verify Database Encryption and Background Sync

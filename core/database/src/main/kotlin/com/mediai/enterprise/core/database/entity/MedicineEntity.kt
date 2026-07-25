@@ -16,5 +16,7 @@ data class MedicineEntity(
     val reminderTimes: String, // Comma-separated times, e.g., "08:00,14:00,20:00"
     val startDate: Long,
     val endDate: Long,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val lastUpdated: Long = System.currentTimeMillis(),
+    val isDirty: Boolean = false
 )
