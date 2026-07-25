@@ -1,20 +1,18 @@
-# Tasks - Phase 12: AI Medical Chatbot (RAG)
+# Tasks - Phase 13: AI Report Summarization
 
-- `[x]` Setup `:feature:chatbot` Module
-- `[x]` Implement `:core:database` Updates
-    - `[x]` `ChatMessageEntity`
-    - `[x]` `ChatDao`
-    - `[x]` Update `MediAIDatabase`
-- `[x]` Implement RAG Knowledge Base
-    - `[x]` `MedicalKnowledgeProvider` (Context Retrieval)
-- `[x]` Implement `:feature:chatbot` Domain Layer
-    - `[x]` `ChatMessage` model
-    - `[x]` `SendMessageUseCase`
-- `[x]` Implement `:feature:chatbot` Data Layer
-    - `[x]` `ChatRepository`
-- `[x]` Implement `:feature:chatbot` UI Layer
-    - `[x]` `ChatViewModel`
-    - `[x]` `ChatScreen` (Message bubbles, Input field)
-- `[x]` Configure Navigation for Chatbot
-- `[x]` Integrate Chatbot shortcut on Home Dashboard
-- `[ ]` Verify RAG Context Injection and AI Responses
+- `[x]` Implement `:core:ai` Specialized Summarizer
+    - `[x]` `MedicalReportSummarizer` (Gemini 1.5 Flash)
+- `[x]` Implement `:feature:reports` Domain Layer
+    - `[x]` `ReportAnalysis` model
+    - `[x]` `SummarizeReportUseCase`
+- `[x]` Implement `:feature:reports` Data Layer
+    - `[x]` Update `ReportRepository` with analysis logic
+- `[x]` Implement UI Components
+    - `[x]` `RiskIndicatorCard`
+    - `[x]` `QuestionList`
+- `[x]` Implement `:feature:reports` Presentation Layer
+    - `[x]` `ReportDetailViewModel`
+    - `[x]` `ReportDetailScreen`
+- `[x]` Configure Navigation for Report Details
+- `[x]` Integrate with Report Timeline
+- `[ ]` Verify AI Summarization and Risk Detection

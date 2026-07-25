@@ -1,71 +1,73 @@
-# Implementation Plan - Phase 12: AI Medical Chatbot (RAG)
+# Implementation Plan - Phase 13: AI Report Summarization
 
-Implement an enterprise-grade medical assistant using **Retrieval-Augmented Generation (RAG)** to provide accurate, context-aware answers based on medical knowledge bases.
+Build a specialized AI tool to analyze complex medical documents (Blood tests, MRI, CT scans) and provide patient-friendly summaries, risk indicators, and suggested follow-up questions.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase introduces conversational AI with local context injection.
+> This phase focuses on the **Multimodal Interpretation** of medical data.
 >
-> - **RAG Architecture**: We will simulate a Retrieval-Augmented Generation flow by injecting relevant "Knowledge Base" snippets (WHO guidelines, hospital policies) into the Gemini prompt based on user query keywords.
-> - **Privacy & Safety**: Every response will include a mandatory medical disclaimer.
-> - **Conversation Memory**: The chatbot will maintain context within a session but will also support persistence in Room for historical review.
+> - **Specialized Prompts**: We will use specialized AI prompt templates for different report categories (e.g., Blood Test vs. MRI).
+> - **Risk Detection**: The AI will highlight potential "Risk Indicators" found in the report, accompanied by a mandatory medical disclaimer.
+> - **Patient Education**: The goal is to translate medical jargon into plain English to empower patients during doctor consultations.
 
 ## Proposed Changes
 
-### Feature Chatbot (`:feature:chatbot`) [NEW MODULE]
+### Core AI (`:core:ai`)
 
-#### [NEW] [Feature Chatbot Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot)
-- Create `:feature:chatbot` module using convention plugins.
+#### [NEW] [MedicalReportSummarizer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalReportSummarizer.kt)
+- Specialized service using **Gemini 1.5 Flash**.
+- Features:
+    - Plain English Summary generation.
+    - Risk Factor extraction.
+    - Suggested Questions for doctors.
+    - Confidence Score calculation.
 
-#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/domain)
-- **ChatMessage** model: ID, Content, Role (User/Assistant), Timestamp.
-- **SendMessageUseCase**: Orchestrates retrieval and LLM calling.
+### Feature Reports (`:feature:reports`)
 
-#### [NEW] [Data Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/data)
-- **KnowledgeBaseProvider**: A repository of medical facts and hospital policies used for context injection.
-- **ChatRepository**: Manages chat history in Room and communicates with Gemini.
+#### [NEW] [SummarizeReportUseCase.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain/usecase/SummarizeReportUseCase.kt)
+- Orchestrates OCR extraction and the summarization service.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/presentation)
-- **ChatScreen**: A fluid message-based UI with typing indicators and quick-reply suggestions.
-- **ChatViewModel**: Handles the UDF (Unidirectional Data Flow) for the conversation.
+#### [MODIFY] [ReportRepository.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain/repository/ReportRepository.kt)
+- Add method to fetch detailed report analysis.
 
-### Core Database (`:core:database`)
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/detail)
+- **ReportDetailScreen**: Displays the original document and the AI analysis.
+- **AiAnalysisSection**: Contains the summary, risks, and suggested questions.
 
-#### [NEW] [ChatMessageEntity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/database/src/main/kotlin/com/mediai/enterprise/core/database/entity/ChatMessageEntity.kt)
-- Persist chat messages for session recovery and history.
+#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/components)
+- **RiskIndicatorCard**: High-contrast card for potential health alerts.
+- **QuestionList**: A list of actionable questions for the patient to ask their doctor.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Add `CHAT_ROUTE`.
+- Ensure `REPORT_DETAIL_ROUTE` is mapped.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Chat[:feature:chatbot] --> C_AI[:core:ai]
-    F_Chat --> C_DB[:core:database]
+    F_Reports[:feature:reports] --> C_AI[:core:ai]
+    F_Reports --> C_UI[:core:ui]
 
-    subgraph RAG Pipeline
-        UserQuery[User Query] --> Retriever[Knowledge Retriever]
-        Retriever --> Context[Relevant Med Context]
-        Context --> Prompt[Prompt Builder]
-        UserQuery --> Prompt
+    subgraph AI Processing
+        OCR[ML Kit OCR] --> RawText[Raw Medical Text]
+        RawText --> Prompt[Category-Specific Prompt]
         Prompt --> Gemini[Gemini 1.5 Flash]
-        Gemini --> Response[AI Response with Disclaimer]
+        Gemini --> Analysis[Plain English Summary + Risks + Questions]
     end
 
-    Response --> History[Chat History Table]
+    Analysis --> UI[ReportDetailScreen]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify the context injection logic (ensure correct knowledge snippets are selected for specific keywords).
-- **ViewModel Tests**: Verify message list updates and loading states.
+- **Unit Tests**: Verify that the correct prompt template is selected based on the report category.
+- **Unit Tests**: Mock Gemini responses and verify the parsing of structured JSON analysis.
 
 ### Manual Verification
-- Ask the chatbot about "Hospital Visiting Hours" (Policy retrieval).
-- Ask about "Diabetes symptoms" (Medical knowledge retrieval).
-- Verify that the medical disclaimer is present in every AI response.
+- Upload a sample Blood Test image and verify the "Risk Indicators" section.
+- Verify that the "Suggested Questions" are relevant to the report content.
+- Check the UI layout on Foldables/Tablets to ensure the report and analysis fit side-by-side.
