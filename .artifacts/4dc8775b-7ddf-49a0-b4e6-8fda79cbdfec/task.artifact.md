@@ -1,18 +1,21 @@
-# Tasks - Phase 13: AI Report Summarization
+# Tasks - Phase 14: AI Symptom Checker & Risk Prediction
 
-- `[x]` Implement `:core:ai` Specialized Summarizer
-    - `[x]` `MedicalReportSummarizer` (Gemini 1.5 Flash)
-- `[x]` Implement `:feature:reports` Domain Layer
-    - `[x]` `ReportAnalysis` model
-    - `[x]` `SummarizeReportUseCase`
-- `[x]` Implement `:feature:reports` Data Layer
-    - `[x]` Update `ReportRepository` with analysis logic
+- `[x]` Setup `:feature:ai` Module
+- `[x]` Implement `:core:ai` Diagnostic Service
+    - `[x]` `MedicalDiagnosticsAi` (Gemini 1.5)
+- `[x]` Implement `:feature:ai` Domain Layer
+    - `[x]` `SymptomAssessment` & `RiskPrediction` models
+    - `[x]` `CheckSymptomsUseCase`
+    - `[x]` `GetRiskPredictionsUseCase`
+- `[x]` Implement `:feature:ai` Data Layer
+    - `[x]` `AiRepository` with implementation
 - `[x]` Implement UI Components
-    - `[x]` `RiskIndicatorCard`
-    - `[x]` `QuestionList`
-- `[x]` Implement `:feature:reports` Presentation Layer
-    - `[x]` `ReportDetailViewModel`
-    - `[x]` `ReportDetailScreen`
-- `[x]` Configure Navigation for Report Details
-- `[x]` Integrate with Report Timeline
-- `[ ]` Verify AI Summarization and Risk Detection
+    - `[x]` `RiskGauge` (Circular probability indicator)
+    - `[x]` `UrgencyBanner` (Emergency alert)
+- `[x]` Implement `:feature:ai` Presentation Layer
+    - `[x]` `SymptomCheckerScreen`
+    - `[x]` `RiskDashboardScreen`
+    - `[x]` `AiViewModel`
+- `[x]` Configure Navigation for AI Features
+- `[x]` Integrate AI shortcuts on Home Dashboard
+- `[ ]` Verify Emergency Redirection and Risk Logic

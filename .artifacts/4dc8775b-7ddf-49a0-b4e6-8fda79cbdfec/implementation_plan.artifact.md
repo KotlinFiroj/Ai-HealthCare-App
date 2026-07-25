@@ -1,73 +1,75 @@
-# Implementation Plan - Phase 13: AI Report Summarization
+# Implementation Plan - Phase 14: AI Symptom Checker & Risk Prediction
 
-Build a specialized AI tool to analyze complex medical documents (Blood tests, MRI, CT scans) and provide patient-friendly summaries, risk indicators, and suggested follow-up questions.
+Implement a diagnostic-assist tool for **MediAI Enterprise** that assesses user-reported symptoms and predicts risks for chronic conditions using **Gemini 1.5 Pro/Flash**.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> This phase focuses on the **Multimodal Interpretation** of medical data.
+> [!CAUTION]
+> This feature provides **AI-generated health assessments** which must be clearly distinguished from medical advice.
 >
-> - **Specialized Prompts**: We will use specialized AI prompt templates for different report categories (e.g., Blood Test vs. MRI).
-> - **Risk Detection**: The AI will highlight potential "Risk Indicators" found in the report, accompanied by a mandatory medical disclaimer.
-> - **Patient Education**: The goal is to translate medical jargon into plain English to empower patients during doctor consultations.
+> - **Medical Disclaimer**: Every assessment will be accompanied by a strict disclaimer that the results are probabilistic and require clinical validation.
+> - **Emergency Detection**: If symptoms suggest a critical condition (e.g., heart attack, stroke), the UI will immediately highlight the **SOS Emergency Button**.
+> - **Risk Models**: We will focus on predicting risks for Diabetes, Hypertension, Heart Disease, and Kidney Disease based on user input.
 
 ## Proposed Changes
 
 ### Core AI (`:core:ai`)
 
-#### [NEW] [MedicalReportSummarizer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalReportSummarizer.kt)
-- Specialized service using **Gemini 1.5 Flash**.
-- Features:
-    - Plain English Summary generation.
-    - Risk Factor extraction.
-    - Suggested Questions for doctors.
-    - Confidence Score calculation.
+#### [NEW] [MedicalDiagnosticsAi.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalDiagnosticsAi.kt)
+- Specialized service to:
+    - Analyze symptoms and identify potential conditions.
+    - Assess risk levels for chronic diseases based on lifestyle/symptom data.
+    - Provide "Explainability" for each risk factor.
 
-### Feature Reports (`:feature:reports`)
+### Feature AI (`:feature:ai`) [NEW MODULE]
 
-#### [NEW] [SummarizeReportUseCase.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain/usecase/SummarizeReportUseCase.kt)
-- Orchestrates OCR extraction and the summarization service.
+#### [NEW] [Feature AI Module Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai)
+- Create `:feature:ai` module using convention plugins.
 
-#### [MODIFY] [ReportRepository.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain/repository/ReportRepository.kt)
-- Add method to fetch detailed report analysis.
+#### [NEW] [Domain Layer](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/domain)
+- **SymptomAssessment** model: Conditions, Risk Level, Urgency, Specialist recommendation.
+- **RiskPrediction** model: Condition (e.g., Diabetes), Probability, Risk Factors, Lifestyle Advice.
+- UseCases: `CheckSymptomsUseCase`, `GetRiskPredictionsUseCase`.
 
-#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/detail)
-- **ReportDetailScreen**: Displays the original document and the AI analysis.
-- **AiAnalysisSection**: Contains the summary, risks, and suggested questions.
+#### [NEW] [UI Layer - Screens](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/presentation)
+- **SymptomCheckerScreen**: Multi-select or natural language input for symptoms.
+- **RiskDashboardScreen**: Visual representation (charts/gauges) of predicted risks.
+- **AssessmentDetailScreen**: Detailed breakdown of a specific assessment.
 
-#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/components)
-- **RiskIndicatorCard**: High-contrast card for potential health alerts.
-- **QuestionList**: A list of actionable questions for the patient to ask their doctor.
+#### [NEW] [UI Layer - Components](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/ai/src/main/kotlin/com/mediai/enterprise/feature/ai/presentation/components)
+- **RiskGauge**: A visual circular gauge for probability scores.
+- **UrgencyBanner**: High-visibility banner for emergency redirection.
 
 ### Navigation (`:core:navigation`)
 
 #### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
-- Ensure `REPORT_DETAIL_ROUTE` is mapped.
+- Add `SYMPTOM_CHECKER_ROUTE` and `RISK_PREDICTION_ROUTE`.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TD
-    F_Reports[:feature:reports] --> C_AI[:core:ai]
-    F_Reports --> C_UI[:core:ui]
+    F_AI[:feature:ai] --> C_AI[:core:ai]
+    F_AI --> C_UI[:core:ui]
 
-    subgraph AI Processing
-        OCR[ML Kit OCR] --> RawText[Raw Medical Text]
-        RawText --> Prompt[Category-Specific Prompt]
-        Prompt --> Gemini[Gemini 1.5 Flash]
-        Gemini --> Analysis[Plain English Summary + Risks + Questions]
+    subgraph AI Diagnostic Pipeline
+        Input[Symptom/Lifestyle Input] --> Prompt[Reasoning Prompt]
+        Prompt --> Gemini[Gemini 1.5]
+        Gemini --> StructuredJSON[Structured Assessment]
+        StructuredJSON --> Logic[Emergency Check Logic]
     end
 
-    Analysis --> UI[ReportDetailScreen]
+    Logic --> Banner[Urgency Banner / SOS]
+    Logic --> Dashboard[Risk Dashboard]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify that the correct prompt template is selected based on the report category.
-- **Unit Tests**: Mock Gemini responses and verify the parsing of structured JSON analysis.
+- **Unit Tests**: Verify that symptoms like "Chest Pain" trigger the "HIGH" urgency/emergency status in the parser.
+- **Unit Tests**: Verify the parsing of Gemini's JSON output for risk predictions.
 
 ### Manual Verification
-- Upload a sample Blood Test image and verify the "Risk Indicators" section.
-- Verify that the "Suggested Questions" are relevant to the report content.
-- Check the UI layout on Foldables/Tablets to ensure the report and analysis fit side-by-side.
+- Enter "Frequent thirst and fatigue" and verify if "Diabetes" risk is identified.
+- Enter "Severe chest pain" and verify the SOS redirection.
+- Check accessibility of the risk gauges and charts.

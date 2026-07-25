@@ -26,6 +26,8 @@ fun HomeRoute(
     onNavigateToEmergency: () -> Unit,
     onNavigateToTimeline: () -> Unit,
     onNavigateToChat: () -> Unit,
+    onNavigateToSymptomChecker: () -> Unit,
+    onNavigateToRiskPrediction: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -36,7 +38,9 @@ fun HomeRoute(
         onNavigateToReminders = onNavigateToReminders,
         onNavigateToEmergency = onNavigateToEmergency,
         onNavigateToTimeline = onNavigateToTimeline,
-        onNavigateToChat = onNavigateToChat
+        onNavigateToChat = onNavigateToChat,
+        onNavigateToSymptomChecker = onNavigateToSymptomChecker,
+        onNavigateToRiskPrediction = onNavigateToRiskPrediction
     )
 }
 
@@ -49,7 +53,9 @@ internal fun HomeScreen(
     onNavigateToReminders: () -> Unit,
     onNavigateToEmergency: () -> Unit,
     onNavigateToTimeline: () -> Unit,
-    onNavigateToChat: () -> Unit
+    onNavigateToChat: () -> Unit,
+    onNavigateToSymptomChecker: () -> Unit,
+    onNavigateToRiskPrediction: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -148,6 +154,26 @@ internal fun HomeScreen(
                             Icon(MediAIIcons.Search, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Chat with MediAI")
+                        }
+                    }
+
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            ElevatedButton(
+                                onClick = onNavigateToSymptomChecker,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Symptom Checker")
+                            }
+                            ElevatedButton(
+                                onClick = onNavigateToRiskPrediction,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Risk Prediction")
+                            }
                         }
                     }
 

@@ -17,7 +17,9 @@ fun NavGraphBuilder.homeGraph(
     onNavigateToReminders: () -> Unit,
     onNavigateToEmergency: () -> Unit,
     onNavigateToTimeline: () -> Unit,
-    onNavigateToChat: () -> Unit
+    onNavigateToChat: () -> Unit,
+    onNavigateToSymptomChecker: () -> Unit,
+    onNavigateToRiskPrediction: () -> Unit
 ) {
     composable(route = MediAINavDestinations.HOME_ROUTE) {
         HomeRoute(
@@ -26,7 +28,9 @@ fun NavGraphBuilder.homeGraph(
             onNavigateToReminders = onNavigateToReminders,
             onNavigateToEmergency = onNavigateToEmergency,
             onNavigateToTimeline = onNavigateToTimeline,
-            onNavigateToChat = onNavigateToChat
+            onNavigateToChat = onNavigateToChat,
+            onNavigateToSymptomChecker = onNavigateToSymptomChecker,
+            onNavigateToRiskPrediction = onNavigateToRiskPrediction
         )
     }
 }

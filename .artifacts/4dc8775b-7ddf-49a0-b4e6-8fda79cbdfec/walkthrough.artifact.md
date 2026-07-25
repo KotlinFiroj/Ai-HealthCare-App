@@ -1,37 +1,43 @@
-# Walkthrough - Phase 13: AI Report Summarization
+# Walkthrough - Phase 14: AI Symptom Checker & Risk Prediction
 
-We have successfully implemented the **AI Report Summarization** system, enabling users to get intelligent, patient-friendly insights from their complex medical documents.
+We have successfully implemented the **AI Diagnostic-Assist** suite for **MediAI Enterprise**, providing users with intelligent symptom analysis and chronic disease risk assessments.
 
 ## Changes Made
 
-### 1. AI Analysis Layer (`:core:ai`)
-- **Specialized Summarizer**: Developed [MedicalReportSummarizer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ai/src/main/kotlin/com/mediai/enterprise/core/ai/MedicalReportSummarizer.kt), which uses **Gemini 1.5 Flash** to interpret medical text. It generates structured analysis including summaries, risk factors, and confidence scores.
-- **Multimodal Interpretation**: The AI is prompted to translate medical jargon into plain English while maintaining clinical relevance.
+### 1. New Feature Module: `:feature:ai`
+- Created the `:feature:ai` module to centralize all advanced diagnostic and risk assessment logic.
+- Established a full Clean Architecture stack (Domain, Data, Presentation) for AI operations.
 
-### 2. Domain & Data Layers (`:feature:reports`)
-- **Report Analysis Model**: Created [ReportAnalysis.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/domain/model/ReportAnalysis.kt) to store the structured AI findings.
-- **Extended Repository**: Updated [ReportRepositoryImpl.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/data/repository/ReportRepositoryImpl.kt) to handle the analysis workflow and provide mock results for demonstration.
+### 2. Intelligent Diagnostic Pipeline (`:core:ai`)
+- **MedicalDiagnosticsAi**: Developed a specialized service that uses **Gemini 1.5** to:
+    - Perform deep analysis on user-reported symptoms.
+    - Predict probabilities for chronic conditions (Diabetes, Hypertension, etc.).
+    - Categorize urgency and provide specialist recommendations.
 
-### 3. Patient-Centric UI Components
-- **Risk Indicators**: Implemented [RiskIndicatorCard.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/components/RiskIndicatorCard.kt) to highlight critical findings in a high-visibility format.
-- **Doctor Prep**: Created [QuestionList.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/components/QuestionList.kt) to give patients a list of actionable questions to ask their healthcare provider based on the report.
+### 3. Safety-First UI Components
+- **UrgencyBanner**: Implemented a high-visibility component that dynamically changes color based on the severity of identified symptoms.
+- **Emergency Awareness**: The system automatically detects life-threatening keywords (e.g., "Chest Pain") and provides a prominent **SOS** shortcut to the Emergency Center.
+- **RiskGauge**: Created a custom circular gauge for intuitive visualization of health risk percentages.
 
-### 4. Deep Analysis Screen
-- **Report Detail View**: Developed [ReportDetailScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/reports/src/main/kotlin/com/mediai/enterprise/feature/reports/presentation/detail/ReportDetailScreen.kt), which provides a comprehensive overview of the medical document and its AI-generated insights.
-- **Async Feedback**: The UI includes specialized loading states and typing effects while the AI is "thinking".
+### 4. Diagnostic Screens
+- **Symptom Checker**: A dedicated screen where users can describe their health concerns and receive immediate, grounded assessments.
+- **Risk Dashboard**: A visual overview of chronic condition risks, empowering users with preventive insights and lifestyle advice.
 
 ## Architecture Highlights
-- **Specialized Prompting**: The system uses category-aware prompts (e.g., Blood Test vs. MRI) to ensure the AI's focus is contextually accurate.
-- **Empowerment through Design**: By focusing on "Suggested Questions", we move the AI's role from just "reading" to "assisting" in the patient-doctor relationship.
+- **Grounded Reasoning**: The AI is instructed to identify 2-3 potential conditions and provide specific specialist recommendations, moving beyond generic advice.
+- **Transparency & Safety**: Every AI-generated assessment includes a mandatory medical disclaimer and is clearly distinguished from a clinical diagnosis.
 
 ## Verification Results
 
-### AI Intelligence
-- Verified that the AI generates relevant follow-up questions for different report types.
-- Confirmed that the "Risk Indicators" correctly highlight anomalous values (simulated in mock).
+### Emergency Logic
+- Verified that entering "chest pain" or "difficulty breathing" correctly sets the urgency to **EMERGENCY** and shows the SOS button.
+- Confirmed that "Low Urgency" symptoms (e.g., "Slight headache") are handled with standard advice and GP recommendations.
 
-> [!IMPORTANT]
-> The "AI Confidence Score" is a vital transparency feature. It helps users understand the reliability of the AI's interpretation for a given document.
+### User Experience
+- Integrated "Symptom Checker" and "Risk Prediction" shortcuts directly onto the [Home Dashboard](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/home/src/main/kotlin/com/mediai/enterprise/feature/home/presentation/HomeScreen.kt) for high discoverability.
+
+> [!CAUTION]
+> These AI features are probabilistic diagnostic-assist tools. They are designed to assist user decision-making but must never be presented as final medical advice.
 
 ## Next Steps
-In **Phase 14: AI Symptom Checker & Risk Prediction**, we will build a tool that allows users to enter symptoms and receive potential risk assessments for chronic conditions like Diabetes and Hypertension.
+In **Phase 15: AI Health Coach & Analytics**, we will build personalized wellness plans (diet, exercise) and visualize long-term health trends using interactive charts.
