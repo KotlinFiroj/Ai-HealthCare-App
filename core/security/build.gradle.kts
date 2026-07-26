@@ -11,4 +11,5 @@ dependencies {
     implementation(project(":core:common"))
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.biometric)
+    implementation(libs.rootbeer)
 }

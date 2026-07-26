@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.mediai.enterprise.core.data";
+option java_multiple_files = true;
+
+message UserPreferences {
+  bool is_dark_mode = 1;
+  string language = 2;
+  bool notifications_enabled = 3;
+}

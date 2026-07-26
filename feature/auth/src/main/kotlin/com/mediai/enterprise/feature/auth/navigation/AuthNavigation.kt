@@ -5,6 +5,7 @@ import androidx.navigation.compose.composable
 import com.mediai.enterprise.core.navigation.MediAINavDestinations
 import com.mediai.enterprise.feature.auth.presentation.login.LoginRoute
 import com.mediai.enterprise.feature.auth.presentation.register.RegisterScreen
+import com.mediai.enterprise.feature.auth.presentation.otp.OtpVerificationScreen
 
 /**
  * [authGraph]
@@ -23,5 +24,13 @@ fun NavGraphBuilder.authGraph(
 
     composable(route = "register") {
         RegisterScreen()
+    }
+
+    composable(route = "otp_verify") {
+        OtpVerificationScreen(
+            onVerifyClick = { /* Handle verify */ },
+            onResendClick = { /* Handle resend */ },
+            onBack = { /* Handle back */ }
+        )
     }
 }

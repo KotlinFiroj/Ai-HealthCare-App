@@ -1,12 +1,17 @@
-# Tasks - Phase 34: Final Enterprise Polish & Handoff
-
-- `[x]` Create Project Showcase (`docs/PROJECT_SHOWCASE.md`)
-- `[x]` Finalize Documentation Library
-    - `[x]` Update `ARCHITECTURE_GUIDE.md`
-    - `[x]` Update `AI_GUIDE.md`
-    - `[x]` Update `SECURITY_GUIDE.md`
-    - `[x]` Update `ANDROID_GUIDE.md`
-- `[x]` Project-wide Code Documentation (KDoc/Docstring) Sweep
-- `[x]` Final README Polish
-- `[ ]` Run Final Technical Audit (Tests & Lint)
-- `[x]` Generate Final Walkthrough
+- `[x]` Update Dependencies in `libs.versions.toml` (DataStore, Protobuf)
+- `[x]` Implement Hardware Integrity Detection (`:core:security`)
+    - `[x]` Root Detection
+    - `[x]` Emulator Detection
+    - `[x]` App Signature Tamper Detection
+- `[x]` Implement Network Hardening
+    - `[x]` SSL Pinning configuration
+- `[x]` Implement Proto DataStore (`:core:data`)
+    - `[x]` Define `user_prefs.proto`
+    - `[x]` Implement Serializer and DataStore wrapper
+- `[x]` Implement Backend OTP Infrastructure
+    - `[x]` `otp_service.py` (Redis-backed)
+    - `[x]` API Endpoints for OTP request/verify
+- `[x]` Implement Frontend 2FA Flow
+    - `[x]` `OtpVerificationScreen.kt`
+    - `[x]` Integrate with `LoginViewModel`
+- `[ ]` Verify Security Hardening logic

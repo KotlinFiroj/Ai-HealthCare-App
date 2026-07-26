@@ -10,7 +10,33 @@ from app.core.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token
 
+from app.services.otp_service import otp_service
+
 router = APIRouter()
+
+@router.post("/request-otp")
+async def request_otp(
+    current_user: User = Depends(deps.get_current_user)
+) -> Any:
+    """
+    Request a 2FA OTP code.
+    """
+    otp = await otp_service.generate_otp(str(current_user.id))
+    # In production, send this via email/SMS
+    return {"message": "OTP sent successfully", "debug_otp": otp}
+
+@router.post("/verify-otp")
+async def verify_otp(
+    otp: str,
+    current_user: User = Depends(deps.get_current_user)
+) -> Any:
+    """
+    Verify the 2FA OTP code.
+    """
+    is_valid = await otp_service.verify_otp(str(current_user.id), otp)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+    return {"status": "success", "message": "2FA Verified"}
 
 @router.post("/register", response_model=UserResponse)
 async def register(

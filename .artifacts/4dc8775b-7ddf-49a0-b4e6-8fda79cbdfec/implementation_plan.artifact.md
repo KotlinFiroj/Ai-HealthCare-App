@@ -1,80 +1,78 @@
-# Implementation Plan - Phase 34: Final Enterprise Polish & Handoff
+# Implementation Plan - Phase 35: Advanced Identity, 2FA & Hardware Integrity
 
-Finalize the **MediAI Enterprise** platform by conducting a rigorous quality audit, elevating all technical documentation to a world-class standard, and preparing the final project showcase.
+Harden the **MediAI Enterprise** security posture by implementing multi-factor authentication and anti-tamper mechanisms to protect sensitive healthcare data.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> This is the official completion phase of the project.
+> [!CAUTION]
+> This phase introduces "Anti-Tamper" logic that may restrict app execution on certain development environments.
 >
-> - **Final Audit**: We will conduct a "Principal Architect" level review of both the Android (20+ modules) and Backend ecosystems.
-> - **Comprehensive Showcase**: We will create a final `PROJECT_SHOWCASE.md` that highlights every major technical accomplishment (RAG, Agents, OCR, SQLCipher, K8s).
-> - **Asset Verification**: We will ensure all internal links and Mermaid diagrams are consistent across the entire `docs/` library.
+> - **Environment Restrictions**: Root and Emulator detection will be configurable. In production, the app will refuse to run on compromised devices.
+> - **SSL Pinning**: This ensures the app only talks to our Nginx gateway. If the certificate changes on the server, the app must be updated or it will lose connectivity.
+> - **2FA logic**: We will implement the backend and frontend flow for **OTP (One-Time Password)** verification via Email/SMS.
 
 ## Proposed Changes
 
-### Documentation Elevation (`docs/`)
+### Core Security (`:core:security`)
 
-#### [NEW] [PROJECT_SHOWCASE.md](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docs/PROJECT_SHOWCASE.md)
-- A high-impact summary of the platform's capabilities.
-- Technical "flex" section detailing the most complex engineering challenges solved.
+#### [NEW] [HardwareIntegrity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/HardwareIntegrity.kt)
+- Logic to detect Root access (checking for su binaries, test-keys).
+- Logic to detect Emulator environments (checking build properties).
+- Tamper detection (verifying app signature at runtime).
 
-#### [MODIFY] [ARCHITECTURE_GUIDE.md](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docs/ARCHITECTURE_GUIDE.md)
-- Finalize the full system interaction diagram (Mobile <-> Nginx <-> FastAPI <-> DB/AI).
+#### [NEW] [SslPinning.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/SslPinning.kt)
+- Configuration for OkHttp `CertificatePinner`.
 
-#### [MODIFY] [AI_GUIDE.md](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docs/AI_GUIDE.md)
-- Deep dive into the "Agentic Orchestration" logic and how Gemini 1.5 powers the autonomous tool selection.
+### Core Data (`:core:data`)
 
-### Codebase Finalization
+#### [NEW] [Proto DataStore Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto)
+- Define a protobuf schema for user settings (Language, Notification toggles, Theme).
 
-#### [MODIFY] [Backend & Android (Project-wide)]
-- Perform a final KDoc/Docstring sweep to ensure 100% descriptive coverage.
-- Remove any leftover debug logs or temporary commented-out code.
-- Verify that all environment variables are correctly documented in `config.py` and `local.properties`.
+#### [NEW] [UserPreferencesSerializer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/prefs/UserPreferencesSerializer.kt)
+- Implementation of the DataStore Serializer.
 
-### Infrastructure Polish
+### Feature Authentication (`:feature:auth`)
 
-#### [MODIFY] [docker-compose.yml](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/docker-compose.yml)
-- Finalize resource limits and health checks for all containers.
+#### [NEW] [OtpVerificationScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/otp/OtpVerificationScreen.kt)
+- 6-digit input UI for 2FA.
+- Resend timer and error handling.
 
-### Project README
+### Backend Updates (`backend/app`)
 
-#### [MODIFY] [README.md](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/README.md)
-- Final update with the full multi-module dependency graph and a "Getting Started" guide for new contributors.
+#### [NEW] [OTP Service](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/otp_service.py)
+- Generate, store (in Redis), and verify 6-digit codes.
 
-## Full System Architecture (Final)
+#### [MODIFY] [auth.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/auth.py)
+- Add `/request-otp` and `/verify-otp` endpoints.
+
+## Security Architecture
 
 ```mermaid
 graph TD
-    subgraph Mobile_App[Android Multi-Module App]
-        UI[Material 3 UI] --> VM[MVI/MVVM ViewModels]
-        VM --> UseCase[Domain Logic]
-        UseCase --> Repo[Secure Repositories]
-        Repo --> SQLCipher[(SQLCipher + Keystore)]
+    App[MediAI App Start] --> Integrity[Hardware Integrity Check]
+    Integrity -->|Root/Emulator Detected| Lock[Lock App + Alert]
+    Integrity -->|Safe| Auth[Auth Flow]
+
+    subgraph 2FA Flow
+        Login[Standard Login] -->|Success| OTP_Req[Request OTP]
+        OTP_Req --> Code[Send SMS/Email]
+        Code --> Verify[Verify 6-Digit Code]
+        Verify -->|Valid| Session[Full Session Issued]
     end
 
-    Mobile_App --WebSocket/REST--> Nginx[NGINX Gateway]
-
-    subgraph Backend_Cloud[FastAPI Backend Ecosystem]
-        Nginx --> API[FastAPI Web Server]
-        API --> Orchestrator[Agent Orchestrator]
-        Orchestrator --> Specialists[Diagnostic/Appt Agents]
-        API --> PG[(PostgreSQL)]
-        Orchestrator --> Chroma[(ChromaDB Vector Store)]
-        API --> Redis[(Redis Pub/Sub & Broker)]
-        Redis --> Worker[Celery Async Workers]
+    subgraph Data Integrity
+        Network[OkHttp] --> Pinning[SSL Pinning]
+        Pinning --> Gateway[Nginx Gateway]
     end
-
-    Worker --> Gemini[Gemini 1.5 AI]
-    Orchestrator --> Gemini
 ```
 
 ## Verification Plan
 
-### Technical Audit
-- Run `./gradlew check` (Android) and `pytest` (Backend) one final time.
-- Verify that every module in the project follows the Clean Architecture boundaries.
+### Automated Tests
+- **Unit Tests**: Verify that the OTP verification logic handles expired codes correctly in Redis.
+- **Unit Tests**: Verify Proto DataStore read/write operations.
 
-### Final Build
-- Verify that `gradlew assembleRelease` and `docker-compose build` both succeed without errors.
-- Ensure the Nginx rate-limiting and security headers are correctly applied.
+### Manual Verification
+- Attempt to run the app on a rooted emulator and verify the "Environment Compromised" warning appears.
+- Test the full 2FA login flow: Password -> OTP -> Dashboard.
+- Verify that SSL Pinning blocks traffic if pointed to an invalid certificate.

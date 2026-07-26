@@ -2,6 +2,7 @@ package com.mediai.enterprise.core.network.di
 
 import com.mediai.enterprise.core.network.AuthInterceptor
 import com.mediai.enterprise.core.network.TokenAuthenticator
+import com.mediai.enterprise.core.security.SslPinning
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,6 +37,7 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .authenticator(tokenAuthenticator)
+            .certificatePinner(SslPinning.certificatePinner)
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })

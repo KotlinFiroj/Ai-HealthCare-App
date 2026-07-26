@@ -30,6 +30,9 @@ room = "2.6.1"
 sqlcipher = "4.5.4"
 sqliteKtx = "2.4.0"
 datastore = "1.1.1"
+protobuf = "3.25.1"
+protobufPlugin = "0.9.4"
+rootbeer = "0.1.0"
 paging = "3.3.0"
 
 # Firebase & Services
@@ -104,6 +107,9 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
 sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqliteKtx" }
 androidx-datastore-proto = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
+protobuf-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "protobuf" }
+rootbeer = { group = "com.scottyab", name = "rootbeer-lib", version.ref = "rootbeer" }
 
 # Async
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutine" }
@@ -162,3 +168,4 @@ room = { id = "androidx.room", version.ref = "room" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 androidx-baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
