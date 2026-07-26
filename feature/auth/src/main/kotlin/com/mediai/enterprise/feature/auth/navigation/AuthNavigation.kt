@@ -6,6 +6,8 @@ import com.mediai.enterprise.core.navigation.MediAINavDestinations
 import com.mediai.enterprise.feature.auth.presentation.login.LoginRoute
 import com.mediai.enterprise.feature.auth.presentation.register.RegisterScreen
 import com.mediai.enterprise.feature.auth.presentation.otp.OtpVerificationScreen
+import com.mediai.enterprise.feature.auth.presentation.biometric.BiometricEnrollmentScreen
+import com.mediai.enterprise.core.security.BiometricType
 
 /**
  * [authGraph]
@@ -30,6 +32,15 @@ fun NavGraphBuilder.authGraph(
         OtpVerificationScreen(
             onVerifyClick = { /* Handle verify */ },
             onResendClick = { /* Handle resend */ },
+            onBack = { /* Handle back */ }
+        )
+    }
+
+    composable(route = MediAINavDestinations.BIOMETRIC_ENROLLMENT_ROUTE) {
+        BiometricEnrollmentScreen(
+            biometricType = BiometricType.FACE, // Pass actual detected type
+            onEnrollClick = { /* Perform enrollment */ },
+            onSkipClick = { /* Skip enrollment */ },
             onBack = { /* Handle back */ }
         )
     }

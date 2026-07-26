@@ -1,78 +1,61 @@
-# Implementation Plan - Phase 35: Advanced Identity, 2FA & Hardware Integrity
+# Implementation Plan - Phase 36: Face Authentication & Advanced Biometrics
 
-Harden the **MediAI Enterprise** security posture by implementing multi-factor authentication and anti-tamper mechanisms to protect sensitive healthcare data.
+Implement specialized biometric identity verification, specifically focusing on "Face Auth" and advanced identity state management for **MediAI Enterprise**.
 
 ## User Review Required
 
-> [!CAUTION]
-> This phase introduces "Anti-Tamper" logic that may restrict app execution on certain development environments.
+> [!IMPORTANT]
+> This phase focuses on the **Identity Layer**.
 >
-> - **Environment Restrictions**: Root and Emulator detection will be configurable. In production, the app will refuse to run on compromised devices.
-> - **SSL Pinning**: This ensures the app only talks to our Nginx gateway. If the certificate changes on the server, the app must be updated or it will lose connectivity.
-> - **2FA logic**: We will implement the backend and frontend flow for **OTP (One-Time Password)** verification via Email/SMS.
+> - **Biometric Type Preference**: We will allow users to specifically enable/disable Face vs Fingerprint authentication (where supported by hardware).
+> - **Identity State**: We will introduce an `identityVerified` flag in the user profile, which is set only after a high-integrity (Class 3) biometric success.
+> - **Hardware Fallback**: If Face hardware is unavailable, the app will gracefully fall back to Fingerprint or Device PIN.
 
 ## Proposed Changes
 
 ### Core Security (`:core:security`)
 
-#### [NEW] [HardwareIntegrity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/HardwareIntegrity.kt)
-- Logic to detect Root access (checking for su binaries, test-keys).
-- Logic to detect Emulator environments (checking build properties).
-- Tamper detection (verifying app signature at runtime).
-
-#### [NEW] [SslPinning.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/SslPinning.kt)
-- Configuration for OkHttp `CertificatePinner`.
-
-### Core Data (`:core:data`)
-
-#### [NEW] [Proto DataStore Setup](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto)
-- Define a protobuf schema for user settings (Language, Notification toggles, Theme).
-
-#### [NEW] [UserPreferencesSerializer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/prefs/UserPreferencesSerializer.kt)
-- Implementation of the DataStore Serializer.
+#### [MODIFY] [BiometricAuthenticator.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/BiometricAuthenticator.kt)
+- Add methods to detect specific biometric types (Face vs Fingerprint).
+- Support for `BIOMETRIC_WEAK` (Class 2) and `BIOMETRIC_STRONG` (Class 3) detection.
 
 ### Feature Authentication (`:feature:auth`)
 
-#### [NEW] [OtpVerificationScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/otp/OtpVerificationScreen.kt)
-- 6-digit input UI for 2FA.
-- Resend timer and error handling.
+#### [NEW] [BiometricEnrollmentScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-in/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/biometric/BiometricEnrollmentScreen.kt)
+- A screen to explain the benefits of biometric security and allow users to opt-in.
+- Visual cues for "Face" focus (e.g., face outline icon).
+
+### Core Data (`:core:data`)
+
+#### [MODIFY] [user_prefs.proto](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto)
+- Add `biometric_enabled` and `preferred_biometric_type` fields.
 
 ### Backend Updates (`backend/app`)
 
-#### [NEW] [OTP Service](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/otp_service.py)
-- Generate, store (in Redis), and verify 6-digit codes.
+#### [MODIFY] [user.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/user.py)
+- Add `biometric_verified` (Boolean) and `last_biometric_auth` (DateTime) to the `User` model.
 
-#### [MODIFY] [auth.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/auth.py)
-- Add `/request-otp` and `/verify-otp` endpoints.
-
-## Security Architecture
+## Identity Flow
 
 ```mermaid
 graph TD
-    App[MediAI App Start] --> Integrity[Hardware Integrity Check]
-    Integrity -->|Root/Emulator Detected| Lock[Lock App + Alert]
-    Integrity -->|Safe| Auth[Auth Flow]
-
-    subgraph 2FA Flow
-        Login[Standard Login] -->|Success| OTP_Req[Request OTP]
-        OTP_Req --> Code[Send SMS/Email]
-        Code --> Verify[Verify 6-Digit Code]
-        Verify -->|Valid| Session[Full Session Issued]
-    end
-
-    subgraph Data Integrity
-        Network[OkHttp] --> Pinning[SSL Pinning]
-        Pinning --> Gateway[Nginx Gateway]
-    end
+    User[App Settings] --> Select[Toggle Biometrics]
+    Select --> Check[Check Hardware Support]
+    Check -->|Strong| Enroll[Class 3 Enrollment - Face/Finger]
+    Check -->|Weak| Warning[Warning: Lower Security]
+    Enroll --> Verify[Verification Prompt]
+    Verify -->|Success| Save[Save Preferences locally + Backend]
+    Save --> Badge[Show 'Identity Verified' Badge]
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify that the OTP verification logic handles expired codes correctly in Redis.
-- **Unit Tests**: Verify Proto DataStore read/write operations.
+- **Unit Tests**: Verify preference mapping for different biometric types.
+- **Unit Tests**: Verify that `BiometricAuthenticator` correctly handles "Not Enrolled" scenarios.
 
 ### Manual Verification
-- Attempt to run the app on a rooted emulator and verify the "Environment Compromised" warning appears.
-- Test the full 2FA login flow: Password -> OTP -> Dashboard.
-- Verify that SSL Pinning blocks traffic if pointed to an invalid certificate.
+- Go to Settings -> Security and toggle Biometrics.
+- Verify the specific iconography for "Face" appears if the device supports it (e.g., Pixel 4/7/8).
+- Log out and log back in using only face/fingerprint.
+- Check the Backend database to ensure `biometric_verified` is updated.

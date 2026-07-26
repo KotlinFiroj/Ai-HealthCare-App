@@ -9,6 +9,8 @@ class User(Base):
     phone_number = Column(String)
     is_admin = Column(Boolean, default=False)
     fcm_token = Column(String, nullable=True)
+    biometric_verified = Column(Boolean, default=False)
+    last_biometric_auth = Column(DateTime, nullable=True)
 
     profile = relationship("PatientProfile", back_populates="user", uselist=False)
     appointments = relationship("Appointment", back_populates="user")

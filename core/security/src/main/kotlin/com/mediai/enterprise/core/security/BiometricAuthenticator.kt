@@ -1,7 +1,10 @@
 package com.mediai.enterprise.core.security
 
 import android.content.Context
+import android.content.pm.PackageManager
 import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -10,7 +13,7 @@ import javax.inject.Inject
 
 /**
  * [BiometricAuthenticator]
- * Handles biometric authentication requests.
+ * Handles biometric authentication requests and hardware detection.
  */
 class BiometricAuthenticator @Inject constructor(
     @ApplicationContext private val context: Context
@@ -18,12 +21,22 @@ class BiometricAuthenticator @Inject constructor(
     /**
      * Checks if biometric authentication is available on the device.
      */
-    fun isBiometricAvailable(): Boolean {
+    fun isBiometricAvailable(authenticators: Int = BIOMETRIC_STRONG): Boolean {
         val biometricManager = BiometricManager.from(context)
-        return biometricManager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or
-            BiometricManager.Authenticators.DEVICE_CREDENTIAL
-        ) == BiometricManager.BIOMETRIC_SUCCESS
+        return biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+    }
+
+    /**
+     * Detects the type of biometric hardware available.
+     * Note: On Android, multiple types can exist. This returns a primary hint.
+     */
+    fun getAvailableBiometricType(): BiometricType {
+        val packageManager = context.packageManager
+        return when {
+            packageManager.hasSystemFeature(PackageManager.FEATURE_FACE) -> BiometricType.FACE
+            packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT) -> BiometricType.FINGERPRINT
+            else -> BiometricType.NONE
+        }
     }
 
     /**
@@ -32,12 +45,14 @@ class BiometricAuthenticator @Inject constructor(
      * @param activity The host activity.
      * @param title Prompt title.
      * @param subtitle Prompt subtitle.
+     * @param authenticators Security class (Strong vs Weak).
      * @param onResult Callback for success or failure.
      */
     fun authenticate(
         activity: FragmentActivity,
         title: String,
         subtitle: String,
+        authenticators: Int = BIOMETRIC_STRONG,
         onResult: (Boolean) -> Unit
     ) {
         val executor = ContextCompat.getMainExecutor(activity)
@@ -62,12 +77,13 @@ class BiometricAuthenticator @Inject constructor(
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
             .setSubtitle(subtitle)
-            .setAllowedAuthenticators(
-                BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                BiometricManager.Authenticators.DEVICE_CREDENTIAL
-            )
+            .setAllowedAuthenticators(authenticators)
             .build()
 
         biometricPrompt.authenticate(promptInfo)
     }
+}
+
+enum class BiometricType {
+    FACE, FINGERPRINT, NONE
 }

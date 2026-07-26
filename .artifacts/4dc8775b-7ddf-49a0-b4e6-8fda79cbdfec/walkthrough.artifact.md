@@ -1,37 +1,38 @@
-# Walkthrough - Phase 35: Advanced Identity, 2FA & Hardware Integrity
+# Walkthrough - Phase 36: Face Authentication & Advanced Biometrics
 
-We have successfully hardened the security posture of **MediAI Enterprise**, implementing multi-factor authentication and advanced hardware-level integrity checks.
+We have successfully implemented specialized biometric identity verification, focusing on "Face Auth" and advanced identity state management for **MediAI Enterprise**.
 
 ## Changes Made
 
-### 1. Hardware Integrity Detection (`:core:security`)
-- **Root & Emulator Detection**: Implemented [HardwareIntegrity.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/integrity/HardwareIntegrity.kt) using the **RootBeer** library and custom build property checks. This ensures the app only runs in a trusted environment, preventing data scraping from emulators or exploitation on rooted devices.
+### 1. Advanced Biometric Detection (`:core:security`)
+- **Type Specialization**: Updated [BiometricAuthenticator.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/BiometricAuthenticator.kt) to distinguish between **Face** and **Fingerprint** hardware using Android system features.
+- **Security Classes**: Added support for differentiating between `BIOMETRIC_STRONG` (Class 3) and `BIOMETRIC_WEAK` (Class 2) authenticators, allowing the app to adjust its security level based on hardware capabilities.
 
-### 2. Multi-Factor Authentication (2FA)
-- **Backend OTP Service**: Developed [otp_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/otp_service.py) on the FastAPI server. It uses **Redis** to store 6-digit codes with a 5-minute expiration window.
-- **OTP Verification UI**: Created [OtpVerificationScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/otp/OtpVerificationScreen.kt), providing a secure, user-friendly 6-digit input flow for the second step of authentication.
+### 2. User-Centric Enrollment UI (`:feature:auth`)
+- **Enrollment Screen**: Developed [BiometricEnrollmentScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/biometric/BiometricEnrollmentScreen.kt), which provides a dedicated interface for users to opt-in to biometric security. The screen dynamically adapts its iconography (Face vs. Fingerprint) based on the detected hardware.
+- **Identity State Tracking**: Integrated the enrollment flow into the authentication navigation graph.
 
-### 3. Network Hardening
-- **SSL Pinning**: Implemented [SslPinning.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/SslPinning.kt) and updated the `NetworkModule` to enforce certificate pinning. This prevents Man-in-the-Middle (MitM) attacks by ensuring the app only communicates with our specific server certificate.
-
-### 4. Modern Preference Management (`:core:data`)
-- **Proto DataStore**: Migrated non-sensitive user settings to **Proto DataStore**. Defined the [user_prefs.proto](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto) schema and implemented a type-safe [UserPreferencesSerializer.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/kotlin/com/mediai/enterprise/core/data/prefs/UserPreferencesSerializer.kt). This supplements our encrypted shared preferences with a more robust and reactive API.
+### 3. Identity State Synchronization
+- **Backend Persistence**: Updated the [User Model](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/user.py) on the FastAPI server to track `biometric_verified` status and the timestamp of the last biometric authentication.
+- **Biometric Status API**: Implemented a new `PATCH /me/biometric-status` endpoint to allow the mobile app to sync the successful enrollment and subsequent authentications with the server.
+- **Local Preferences**: Expanded the [user_prefs.proto](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto) schema to store the user's biometric preferences and preferred authentication type.
 
 ## Architecture Highlights
-- **Hardware-Backed Identity**: By combining Biometrics (from Phase 5) with 2FA and Hardware Integrity, we've created a "Defence in Depth" strategy.
-- **Type-Safe Persistence**: Proto DataStore ensures that user preferences are schema-validated, reducing runtime crashes caused by type mismatches in traditional SharedPreferences.
+- **Dynamic Adaptability**: The UI and security logic automatically adapt to the user's device hardware, providing a tailored experience for Face-unlock devices like the Google Pixel 8.
+- **Unified Identity**: By syncing biometric status with the backend, we ensure that high-stakes clinical actions (like viewing surgical reports) can require a recent "Verified" biometric state regardless of which device the user is using.
 
 ## Verification Results
 
-### Environment Security
-- Verified that `isRooted()` correctly identifies common root binaries.
-- Confirmed that `isEmulator()` flags standard Android Studio and Genymotion emulators.
+### Hardware Detection
+- Verified that `getAvailableBiometricType()` correctly identifies Face hardware on supported emulators and physical devices.
+- Confirmed that the `BiometricEnrollmentScreen` displays the Face icon when face recognition is detected.
 
-### 2FA Logic
-- Verified that the backend correctly generates unique codes per user and invalidates them after one successful use or 5 minutes of inactivity.
+### Backend Integration
+- Verified that the `PATCH /me/biometric-status` endpoint correctly updates the `biometric_verified` flag in the PostgreSQL database.
+- Confirmed that the `UserResponse` schema now includes the biometric status for transparency.
 
-> [!CAUTION]
-> SSL Pinning is a powerful security feature but requires operational rigor. Ensure you have a process to update the app before your server's SSL certificate expires, or the app will lose all backend connectivity.
+> [!TIP]
+> Users with devices that only support "Weak" face unlock (Class 2) will be encouraged to use their PIN or Fingerprint (if Strong) for accessing highly sensitive medical records to maintain clinical-grade security.
 
 ## Next Steps
-In **Phase 36: Face Authentication & Advanced Biometrics**, we will implement the specialized "Face Auth" requirement using the Android Biometric API and explore custom facial recognition landmarks for medical identity verification.
+In **Phase 37: Multi-Language Support & Internationalization**, we will implement the infrastructure for supporting multiple languages and locales, ensuring MediAI Enterprise is accessible to a global patient population.

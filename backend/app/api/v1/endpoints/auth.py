@@ -8,11 +8,31 @@ from app.core import security
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.schemas.user import UserCreate, UserResponse, Token, BiometricStatusUpdate
 
 from app.services.otp_service import otp_service
 
 router = APIRouter()
+
+@router.patch("/me/biometric-status", response_model=UserResponse)
+async def update_biometric_status(
+    *,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+    status_in: BiometricStatusUpdate
+) -> Any:
+    """
+    Update the biometric verification status for the current user.
+    """
+    current_user.biometric_verified = status_in.biometric_verified
+    if status_in.biometric_verified:
+        from datetime import datetime
+        current_user.last_biometric_auth = datetime.utcnow()
+
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user
 
 @router.post("/request-otp")
 async def request_otp(

@@ -14,9 +14,13 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: UUID4
     created_at: datetime
+    biometric_verified: bool = False
 
     class Config:
         from_attributes = True
+
+class BiometricStatusUpdate(BaseModel):
+    biometric_verified: bool
 
 class Token(BaseModel):
     access_token: str
