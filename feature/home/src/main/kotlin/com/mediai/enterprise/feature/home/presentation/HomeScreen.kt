@@ -31,6 +31,7 @@ fun HomeRoute(
     onNavigateToHealthCoach: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
     onNavigateToConsultation: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -46,7 +47,8 @@ fun HomeRoute(
         onNavigateToRiskPrediction = onNavigateToRiskPrediction,
         onNavigateToHealthCoach = onNavigateToHealthCoach,
         onNavigateToAnalytics = onNavigateToAnalytics,
-        onNavigateToConsultation = onNavigateToConsultation
+        onNavigateToConsultation = onNavigateToConsultation,
+        onNavigateToSettings = onNavigateToSettings
     )
 }
 
@@ -64,7 +66,8 @@ internal fun HomeScreen(
     onNavigateToRiskPrediction: () -> Unit,
     onNavigateToHealthCoach: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
-    onNavigateToConsultation: () -> Unit
+    onNavigateToConsultation: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -74,8 +77,8 @@ internal fun HomeScreen(
                     IconButton(onClick = { }) {
                         Icon(MediAIIcons.Notifications, contentDescription = "Notifications")
                     }
-                    IconButton(onClick = { }) {
-                        Icon(MediAIIcons.Account, contentDescription = "Profile")
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(MediAIIcons.Settings, contentDescription = "Settings")
                     }
                 }
             )

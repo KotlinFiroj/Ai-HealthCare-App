@@ -1,0 +1,11 @@
+<resources>
+    <string name="common_doctor">طبيب</string>
+    <string name="common_appointment">موعد</string>
+    <string name="common_hospital">مستشفى</string>
+    <string name="common_settings">إعدادات</string>
+    <string name="common_language">لغة</string>
+    <string name="common_save">حفظ</string>
+    <string name="common_cancel">إلغاء</string>
+    <string name="common_confirm">تأكيد</string>
+    <string name="common_emergency">طوارئ</string>
+</resources>

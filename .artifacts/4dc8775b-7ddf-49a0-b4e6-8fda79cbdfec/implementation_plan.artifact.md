@@ -1,61 +1,78 @@
-# Implementation Plan - Phase 36: Face Authentication & Advanced Biometrics
+# Implementation Plan - Phase 37: Multi-Language Support & Internationalization
 
-Implement specialized biometric identity verification, specifically focusing on "Face Auth" and advanced identity state management for **MediAI Enterprise**.
+Implement a robust internationalization (i18n) framework for **MediAI Enterprise**, enabling global accessibility through multi-language support, locale-aware formatting, and Right-to-Left (RTL) compatibility.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase focuses on the **Identity Layer**.
+> This phase establishes the foundation for global reach.
 >
-> - **Biometric Type Preference**: We will allow users to specifically enable/disable Face vs Fingerprint authentication (where supported by hardware).
-> - **Identity State**: We will introduce an `identityVerified` flag in the user profile, which is set only after a high-integrity (Class 3) biometric success.
-> - **Hardware Fallback**: If Face hardware is unavailable, the app will gracefully fall back to Fingerprint or Device PIN.
+> - **Language Management**: Users will be able to switch languages dynamically within the app settings.
+> - **Multi-Module Strings**: We will adopt a "Core Strings" strategy for shared terms, while feature-specific strings remain in their respective modules.
+> - **RTL Support**: We will ensure all layouts are compatible with Right-to-Left languages like Arabic.
+> - **Persistence**: Language preferences will be stored in **Proto DataStore**.
 
 ## Proposed Changes
 
-### Core Security (`:core:security`)
+### Core UI (`:core:ui`)
 
-#### [MODIFY] [BiometricAuthenticator.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/BiometricAuthenticator.kt)
-- Add methods to detect specific biometric types (Face vs Fingerprint).
-- Support for `BIOMETRIC_WEAK` (Class 2) and `BIOMETRIC_STRONG` (Class 3) detection.
+#### [NEW] [LocaleHelper.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ui/src/main/kotlin/com/mediai/enterprise/core/ui/util/LocaleHelper.kt)
+- Utility to change the app's locale at runtime without a full activity recreation where possible.
 
-### Feature Authentication (`:feature:auth`)
+### Core Design System (`:core:designsystem`)
 
-#### [NEW] [BiometricEnrollmentScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-in/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/biometric/BiometricEnrollmentScreen.kt)
-- A screen to explain the benefits of biometric security and allow users to opt-in.
-- Visual cues for "Face" focus (e.g., face outline icon).
+#### [NEW] [Common Strings](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/res/values/strings.xml)
+- Define standard healthcare terms (e.g., "Doctor", "Appointment", "Hospital") in English.
+
+#### [NEW] [Spanish Translation](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/res/values-es/strings.xml)
+- Provide translations for common terms.
+
+#### [NEW] [Arabic Translation (RTL)](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/res/values-ar/strings.xml)
+- Provide translations and verify layout mirroring.
+
+### Feature Settings (`:feature:settings`) [NEW MODULE]
+
+#### [NEW] [LanguageSelectionScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/settings/src/main/kotlin/com/mediai/enterprise/feature/settings/presentation/language/LanguageSelectionScreen.kt)
+- A dedicated UI for users to choose their preferred language.
 
 ### Core Data (`:core:data`)
 
 #### [MODIFY] [user_prefs.proto](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto)
-- Add `biometric_enabled` and `preferred_biometric_type` fields.
+- Ensure the `language` field is utilized and synchronized with the Android system configuration.
 
-### Backend Updates (`backend/app`)
+### Navigation (`:core:navigation`)
 
-#### [MODIFY] [user.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/user.py)
-- Add `biometric_verified` (Boolean) and `last_biometric_auth` (DateTime) to the `User` model.
+#### [MODIFY] [MediAINavDestinations.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/navigation/src/main/kotlin/com/mediai/enterprise/core/navigation/MediAINavDestinations.kt)
+- Add `SETTINGS_ROUTE` and `LANGUAGE_SELECTION_ROUTE`.
 
-## Identity Flow
+## Architecture Diagram
 
 ```mermaid
 graph TD
-    User[App Settings] --> Select[Toggle Biometrics]
-    Select --> Check[Check Hardware Support]
-    Check -->|Strong| Enroll[Class 3 Enrollment - Face/Finger]
-    Check -->|Weak| Warning[Warning: Lower Security]
-    Enroll --> Verify[Verification Prompt]
-    Verify -->|Success| Save[Save Preferences locally + Backend]
-    Save --> Badge[Show 'Identity Verified' Badge]
+    User[Settings UI] --> Selector[Language Selector]
+    Selector --> DataStore[Proto DataStore]
+    DataStore --> App[MediAIApp / MainActivity]
+    App --> LocaleManager[Android LocaleManager API]
+    LocaleManager --> Resources[Localized strings.xml]
+
+    subgraph Resource Hierarchy
+        CoreStrings[core:designsystem strings]
+        AuthStrings[feature:auth strings]
+        HomeStrings[feature:home strings]
+    end
+
+    Resources --> CoreStrings
+    Resources --> AuthStrings
+    Resources --> HomeStrings
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **Unit Tests**: Verify preference mapping for different biometric types.
-- **Unit Tests**: Verify that `BiometricAuthenticator` correctly handles "Not Enrolled" scenarios.
+- **Unit Tests**: Verify that updating the DataStore language correctly triggers the locale update logic.
+- **Compose Previews**: Test `LanguageSelectionScreen` in different locales (EN, ES, AR) to verify RTL layout mirroring.
 
 ### Manual Verification
-- Go to Settings -> Security and toggle Biometrics.
-- Verify the specific iconography for "Face" appears if the device supports it (e.g., Pixel 4/7/8).
-- Log out and log back in using only face/fingerprint.
-- Check the Backend database to ensure `biometric_verified` is updated.
+- Switch language to Spanish and verify the Dashboard metrics and labels update correctly.
+- Switch language to Arabic and verify the entire UI mirrors (RTL) and text is correctly aligned.
+- Restart the app and verify the language preference persists.

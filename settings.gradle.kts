@@ -51,6 +51,7 @@ include(":feature:healthtimeline")
 include(":feature:chatbot")
 include(":feature:ai")
 include(":feature:analytics")
+include(":feature:settings")
 
 // Performance Modules
 include(":benchmark")

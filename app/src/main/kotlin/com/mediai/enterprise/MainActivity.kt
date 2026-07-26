@@ -32,6 +32,8 @@ import com.mediai.enterprise.feature.home.navigation.homeGraph
 import com.mediai.enterprise.feature.home.navigation.navigateToHome
 import com.mediai.enterprise.feature.reminder.navigation.reminderGraph
 import com.mediai.enterprise.feature.reports.navigation.reportGraph
+import com.mediai.enterprise.feature.settings.navigation.settingsGraph
+import com.mediai.enterprise.feature.settings.navigation.navigateToLanguageSelection
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.ui.Modifier
 
@@ -101,6 +103,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onNavigateToConsultation = {
                                 navController.navigate(CONSULTATION_ROUTE)
+                            },
+                            onNavigateToSettings = {
+                                navController.navigateToLanguageSelection()
                             }
                         )
 
@@ -112,6 +117,8 @@ class MainActivity : ComponentActivity() {
                         chatGraph(navController)
                         aiGraph(navController)
                         analyticsGraph(navController)
+
+                        settingsGraph(navController)
                     }
                 }
             }

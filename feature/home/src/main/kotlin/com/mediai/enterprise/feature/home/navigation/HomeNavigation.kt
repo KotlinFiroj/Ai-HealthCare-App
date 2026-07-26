@@ -22,7 +22,8 @@ fun NavGraphBuilder.homeGraph(
     onNavigateToRiskPrediction: () -> Unit,
     onNavigateToHealthCoach: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
-    onNavigateToConsultation: () -> Unit
+    onNavigateToConsultation: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     composable(route = MediAINavDestinations.HOME_ROUTE) {
         HomeRoute(
@@ -36,7 +37,8 @@ fun NavGraphBuilder.homeGraph(
             onNavigateToRiskPrediction = onNavigateToRiskPrediction,
             onNavigateToHealthCoach = onNavigateToHealthCoach,
             onNavigateToAnalytics = onNavigateToAnalytics,
-            onNavigateToConsultation = onNavigateToConsultation
+            onNavigateToConsultation = onNavigateToConsultation,
+            onNavigateToSettings = onNavigateToSettings
         )
     }
 }

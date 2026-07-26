@@ -1,17 +1,15 @@
-# Tasks - Phase 36: Face Authentication & Advanced Biometrics
+# Tasks - Phase 37: Multi-Language Support & Internationalization
 
-- `[x]` Update `BiometricAuthenticator` with Type Detection
-    - `[x]` Detect Face vs Fingerprint support
-    - `[x]` Support for `BIOMETRIC_STRONG` vs `BIOMETRIC_WEAK`
-- `[x]` Update `user_prefs.proto`
-    - `[x]` Add `biometric_enabled` and `biometric_type`
-- `[x]` Implement Biometric Enrollment UI
-    - `[x]` Create `BiometricEnrollmentScreen.kt`
-    - `[x]` Add Face/Fingerprint visual indicators
-- `[x]` Update Backend Models
-    - `[x]` Add `biometric_verified` and `last_biometric_auth` to `User` model
-- `[x]` Implement Backend Biometric Status API
-    - `[x]` Update `UserResponse` schema
-    - `[x]` Add `PATCH /me/biometric-status` endpoint
-- `[x]` Integrate Enrollment Flow in Mobile App
-- `[ ]` Verify Identity State Management
+- `[x]` Setup `:feature:settings` Module
+- `[x]` Implement Locale Management (`:core:ui`)
+    - `[x]` `LocaleHelper` utility
+- `[x]` Define Localized Resources (`:core:designsystem`)
+    - `[x]` Base `strings.xml` (English)
+    - `[x]` Spanish `strings.xml`
+    - `[x]` Arabic `strings.xml` (RTL)
+- `[x]` Implement UI Layer (`:feature:settings`)
+    - `[x]` `LanguageSelectionScreen`
+    - `[x]` `SettingsViewModel` (integration with Proto DataStore)
+- `[x]` Configure Navigation for Settings & Language
+- `[x]` Update `MainActivity` for Dynamic Locale Support
+- `[ ]` Verify RTL Mirroring and Persistence

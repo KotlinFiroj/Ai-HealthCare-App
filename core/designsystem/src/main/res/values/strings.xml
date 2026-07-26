@@ -1,0 +1,11 @@
+<resources>
+    <string name="common_doctor">Doctor</string>
+    <string name="common_appointment">Appointment</string>
+    <string name="common_hospital">Hospital</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_language">Language</string>
+    <string name="common_save">Save</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_confirm">Confirm</string>
+    <string name="common_emergency">Emergency</string>
+</resources>

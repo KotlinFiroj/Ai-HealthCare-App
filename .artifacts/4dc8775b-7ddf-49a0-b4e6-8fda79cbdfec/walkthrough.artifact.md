@@ -1,38 +1,39 @@
-# Walkthrough - Phase 36: Face Authentication & Advanced Biometrics
+# Walkthrough - Phase 37: Multi-Language Support & Internationalization
 
-We have successfully implemented specialized biometric identity verification, focusing on "Face Auth" and advanced identity state management for **MediAI Enterprise**.
+We have successfully implemented a robust internationalization framework for **MediAI Enterprise**, enabling global accessibility through multi-language support and RTL compatibility.
 
 ## Changes Made
 
-### 1. Advanced Biometric Detection (`:core:security`)
-- **Type Specialization**: Updated [BiometricAuthenticator.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/security/src/main/kotlin/com/mediai/enterprise/core/security/BiometricAuthenticator.kt) to distinguish between **Face** and **Fingerprint** hardware using Android system features.
-- **Security Classes**: Added support for differentiating between `BIOMETRIC_STRONG` (Class 3) and `BIOMETRIC_WEAK` (Class 2) authenticators, allowing the app to adjust its security level based on hardware capabilities.
+### 1. New Feature Module: `:feature:settings`
+- Created the `:feature:settings` module to manage user preferences and application settings.
+- Integrated with Clean Architecture and Hilt for dependency injection.
 
-### 2. User-Centric Enrollment UI (`:feature:auth`)
-- **Enrollment Screen**: Developed [BiometricEnrollmentScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/auth/src/main/kotlin/com/mediai/enterprise/feature/auth/presentation/biometric/BiometricEnrollmentScreen.kt), which provides a dedicated interface for users to opt-in to biometric security. The screen dynamically adapts its iconography (Face vs. Fingerprint) based on the detected hardware.
-- **Identity State Tracking**: Integrated the enrollment flow into the authentication navigation graph.
+### 2. Global Locale Management (`:core:ui`)
+- **LocaleHelper**: Implemented [LocaleHelper.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/ui/src/main/kotlin/com/mediai/enterprise/core/ui/util/LocaleHelper.kt) which uses the modern **Android 13+ LocaleManager API**. This allows users to change the app's language independently of the system language.
 
-### 3. Identity State Synchronization
-- **Backend Persistence**: Updated the [User Model](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/user.py) on the FastAPI server to track `biometric_verified` status and the timestamp of the last biometric authentication.
-- **Biometric Status API**: Implemented a new `PATCH /me/biometric-status` endpoint to allow the mobile app to sync the successful enrollment and subsequent authentications with the server.
-- **Local Preferences**: Expanded the [user_prefs.proto](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/data/src/main/proto/user_prefs.proto) schema to store the user's biometric preferences and preferred authentication type.
+### 3. Comprehensive Localization (`:core:designsystem`)
+- **Multi-lingual Resources**: Defined localized terms in [English](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/res/values/strings.xml), [Spanish](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/res/values-es/strings.xml), and [Arabic](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/designsystem/src/main/res/values-ar/strings.xml).
+- **RTL Support**: Arabic translations include layout mirroring support to ensure a premium user experience for Middle Eastern patient populations.
+
+### 4. User-Friendly Selection UI
+- **Language Selector**: Developed [LanguageSelectionScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/settings/src/main/kotlin/com/mediai/enterprise/feature/settings/presentation/language/LanguageSelectionScreen.kt), providing a clean, check-marked interface for choosing languages.
+- **Home Integration**: Added a settings shortcut in the main dashboard's top bar for quick access.
 
 ## Architecture Highlights
-- **Dynamic Adaptability**: The UI and security logic automatically adapt to the user's device hardware, providing a tailored experience for Face-unlock devices like the Google Pixel 8.
-- **Unified Identity**: By syncing biometric status with the backend, we ensure that high-stakes clinical actions (like viewing surgical reports) can require a recent "Verified" biometric state regardless of which device the user is using.
+- **Decoupled i18n**: By centralizing common strings in `:core:designsystem`, we maintain consistency across all feature modules while allowing features to have their own specialized translations.
+- **System Integration**: Using `LocaleList` for language tags ensures compatibility with modern Android per-app language preferences.
 
 ## Verification Results
 
-### Hardware Detection
-- Verified that `getAvailableBiometricType()` correctly identifies Face hardware on supported emulators and physical devices.
-- Confirmed that the `BiometricEnrollmentScreen` displays the Face icon when face recognition is detected.
+### Dynamic Switching
+- Verified that selecting "Spanish" instantly updates common labels like "Cita" and "Médico".
+- Verified that "Arabic" correctly triggers Right-to-Left layout mirroring for the entire dashboard.
 
-### Backend Integration
-- Verified that the `PATCH /me/biometric-status` endpoint correctly updates the `biometric_verified` flag in the PostgreSQL database.
-- Confirmed that the `UserResponse` schema now includes the biometric status for transparency.
+### Persistence
+- Confirmed that the selected language is stored and automatically applied during the next app launch.
 
 > [!TIP]
-> Users with devices that only support "Weak" face unlock (Class 2) will be encouraged to use their PIN or Fingerprint (if Strong) for accessing highly sensitive medical records to maintain clinical-grade security.
+> To add a new language, simply create a new `values-xx` directory in `:core:designsystem` and add the corresponding `LanguageOption` to the `SettingsViewModel`.
 
 ## Next Steps
-In **Phase 37: Multi-Language Support & Internationalization**, we will implement the infrastructure for supporting multiple languages and locales, ensuring MediAI Enterprise is accessible to a global patient population.
+In **Phase 38: Performance Monitoring & Lean Build**, we will conduct a final optimization of the APK size by removing redundant resources and fine-tuning the R8 Proguard rules.
