@@ -1,69 +1,73 @@
-# Implementation Plan - Phase 32: Telehealth, Payments & Appointment Lifecycle
+# Implementation Plan - Phase 33: Multi-Device Sync & Real-time Events
 
-Elevate the **MediAI Enterprise** platform by implementing real-time video consultations, secure payment processing, and a full-lifecycle appointment management system.
+Implement real-time synchronization and event broadcasting for **MediAI Enterprise** using **WebSockets** and **Redis Pub/Sub**.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> This phase introduces real-time communication and financial transactions.
+> This phase moves the app from a "pull-based" to a "push-based" real-time system.
 >
-> - **Video Technology**: We will implement a professional Telehealth UI. For a real production app, this would use WebRTC or a provider like Agora/Zoom; here, we will build the interface and signaling logic foundation.
-> - **Payment Security**: We will follow PCI-DSS inspired patterns, using a separate "Payment Session" flow to ensure sensitive card data never touches our primary backend.
-> - **Lifecycle Transitions**: Appointments will now move through states: `PENDING_PAYMENT` -> `CONFIRMED` -> `IN_PROGRESS` -> `COMPLETED` or `CANCELLED`.
+> - **WebSocket Infrastructure**: We will implement a persistent connection between the mobile app and backend to handle real-time chat messages and system alerts.
+> - **Redis Pub/Sub**: Used on the backend to ensure that if a user has multiple devices (or multiple backend containers are running), the events are broadcasted correctly to the relevant WebSocket connections.
+> - **Real-time Chat**: Messages will no longer require a refresh or a new POST request to be seen; they will appear instantly in the UI.
 
 ## Proposed Changes
 
-### Android Application (`:feature:appointment`)
+### Backend Infrastructure (`backend/app/core`)
 
-#### [NEW] [ConsultationRoomScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/telehealth/ConsultationRoomScreen.kt)
-- Real-time video call UI with toggles for Mic, Camera, and End Call.
-- Chat overlay for sharing medical notes during the call.
+#### [NEW] [websockets.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/websockets.py)
+- Implement a `ConnectionManager` to handle active WebSocket connections.
+- Logic to associate `user_id` with specific WebSocket sessions.
 
-#### [NEW] [PaymentCheckoutScreen.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/payment/PaymentCheckoutScreen.kt)
-- Secure payment entry using Material 3 components.
-- Success/Failure state handling for transactions.
-
-#### [MODIFY] [AppointmentViewModel.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/appointment/src/main/kotlin/com/mediai/enterprise/feature/appointment/presentation/AppointmentViewModel.kt)
-- Add logic for `processPayment`, `cancelAppointment`, and `rescheduleAppointment`.
-
-### Backend Services (`backend/app`)
-
-#### [NEW] [Payment Model](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/models/payment.py)
-- `Transaction`: ID, AppointmentID, Amount, Status (SUCCESS, PENDING, FAILED), ProviderTransactionID.
-
-#### [NEW] [payment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/payment_service.py)
-- Logic to initiate payment intents and verify transaction webhooks.
-
-#### [MODIFY] [appointment_service.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/services/appointment_service.py)
-- Implement state transitions (e.g., automatically confirming an appointment once payment is verified).
+#### [MODIFY] [celery_app.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/core/celery_app.py)
+- Integrate Redis as a Pub/Sub layer for event broadcasting.
 
 ### API Endpoints (`backend/app/api/v1/endpoints`)
 
-#### [NEW] [payments.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/payments.py)
-- `POST /create-checkout-session`: Generate a secure payment session.
-- `GET /status/{id}`: Verify payment status.
+#### [NEW] [ws.py](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/backend/app/api/v1/endpoints/ws.py)
+- `WS /connect`: The main WebSocket entry point for the mobile app.
+- Handles authentication via token in the query parameter.
 
-## Appointment Lifecycle State Machine
+### Android Application (`:core:network`)
+
+#### [NEW] [MediAIWebSocketClient.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/network/src/main/kotlin/com/mediai/enterprise/core/network/websocket/MediAIWebSocketClient.kt)
+- Use **OkHttp WebSocket** to maintain a persistent connection.
+- Implement automatic reconnection logic and heartbeat (ping/pong).
+
+#### [NEW] [RealtimeEvent.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/core/network/src/main/kotlin/com/mediai/enterprise/core/network/websocket/RealtimeEvent.kt)
+- Define a sealed class for events: `ChatMessageReceived`, `AppointmentStatusChanged`, `EmergencyAlertTriggered`.
+
+### Feature Integration (`:feature:chatbot`)
+
+#### [MODIFY] [ChatViewModel.kt](file:///J:/Android/AndroidStudioProjects/Gemini/Ai-HealthCare-App/feature/chatbot/src/main/kotlin/com/mediai/enterprise/feature/chatbot/presentation/chat/ChatViewModel.kt)
+- Subscribe to the WebSocket event stream to update the UI in real-time.
+
+## Architecture Diagram
 
 ```mermaid
-stateDiagram-v2
-    [*] --> PENDING_PAYMENT : Book Slot
-    PENDING_PAYMENT --> CONFIRMED : Payment Success
-    PENDING_PAYMENT --> CANCELLED : Payment Timeout/Cancel
-    CONFIRMED --> IN_PROGRESS : Doctor Starts Call
-    CONFIRMED --> RESCHEDULED : User Changes Time
-    IN_PROGRESS --> COMPLETED : Call Ends
-    IN_PROGRESS --> CANCELLED : Disconnect/Issue
-    COMPLETED --> [*]
+graph TD
+    User1[Mobile App A] --WS--> API[FastAPI Container 1]
+    User2[Mobile App B] --WS--> API2[FastAPI Container 2]
+
+    API --Pub/Sub--> Redis[(Redis)]
+    API2 --Pub/Sub--> Redis
+
+    subgraph Real-time Flow
+        Event[System Event/Message] --> Redis
+        Redis -->|Broadcast| API
+        Redis -->|Broadcast| API2
+        API -->|Push| User1
+        API2 -->|Push| User2
+    end
 ```
 
 ## Verification Plan
 
 ### Automated Tests
-- **State Machine Tests**: Verify that an appointment cannot move to `IN_PROGRESS` if it is not `CONFIRMED`.
-- **Payment Verification Tests**: Mock the payment gateway response and verify the transaction record update.
+- **Backend Tests**: Verify that sending a message to Redis Pub/Sub correctly pushes data to an active WebSocket connection.
+- **Android Tests**: Verify the WebSocket client handles connection drops and reconnections gracefully.
 
 ### Manual Verification
-- Book a doctor, proceed through the payment screen, and verify the status changes to "Confirmed" on the dashboard.
-- Launch a "Video Consultation" and verify the camera/mic permissions are requested correctly.
-- Reschedule an appointment and verify the new time is reflected in the Health Timeline.
+- Open the app on two different emulators with the same user account.
+- Send a chat message from one and verify it appears instantly on the other without refreshing.
+- Trigger an appointment status change on the backend and verify the mobile UI updates immediately.

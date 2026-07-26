@@ -3,6 +3,7 @@ from sqlalchemy import select
 from app.models.chat import ChatMessage
 from app.services.rag_service import rag_service
 from app.core.agents.medical_agents import MediAiOrchestrator
+from app.core.websockets import manager
 from uuid import UUID
 from typing import List
 
@@ -43,4 +44,12 @@ class ChatService:
 
         await db.commit()
         await db.refresh(assistant_msg)
+
+        # 6. Broadcast via WebSocket
+        await manager.broadcast_event(
+            "CHAT_MESSAGE",
+            {"content": assistant_content, "role": "assistant"},
+            str(user_id)
+        )
+
         return assistant_msg

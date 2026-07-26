@@ -2,6 +2,7 @@ package com.mediai.enterprise.feature.chatbot.data.repository
 
 import com.mediai.enterprise.core.database.dao.ChatDao
 import com.mediai.enterprise.core.database.entity.ChatMessageEntity
+import com.mediai.enterprise.core.network.websocket.MediAIWebSocketClient
 import com.mediai.enterprise.feature.chatbot.data.remote.ChatApiService
 import com.mediai.enterprise.feature.chatbot.data.remote.model.ChatRequestDto
 import com.mediai.enterprise.feature.chatbot.domain.model.ChatMessage
@@ -12,8 +13,14 @@ import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(
     private val chatDao: ChatDao,
-    private val apiService: ChatApiService
+    private val apiService: ChatApiService,
+    private val wsClient: MediAIWebSocketClient
 ) : ChatRepository {
+
+    init {
+        // Automatically connect and listen for real-time messages
+        wsClient.connect()
+    }
 
     override fun getChatHistory(): Flow<List<ChatMessage>> {
         // Source of truth is the local database for UI responsiveness
