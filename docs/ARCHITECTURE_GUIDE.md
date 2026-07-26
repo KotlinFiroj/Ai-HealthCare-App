@@ -23,23 +23,31 @@ MediAI Enterprise follows a multi-module, Clean Architecture pattern designed fo
 - **Core Modules**: `:core:common`, `:core:designsystem`, `:core:data`, `:core:ai`, `:core:security`. Shared logic and infrastructure.
 - **Build Logic**: Centralized using Gradle Convention Plugins in `build-logic`.
 
-## Dependency Graph
+## Full System Interaction
 
 ```mermaid
 graph TD
-    App([:app]) --> F_Home[:feature-home]
-    App --> F_Auth[:feature-auth]
-    App --> F_Reports[:feature-reports]
+    subgraph Mobile_App[Android Multi-Module App]
+        UI[Material 3 UI] --> VM[ViewModels]
+        VM --> UseCase[Domain Logic]
+        UseCase --> Repo[Secure Repositories]
+        Repo --> SQLCipher[(SQLCipher + Keystore)]
+    end
 
-    F_Home --> C_Domain[:core-domain]
-    F_Home --> C_UI[:core-ui]
+    Mobile_App --WebSocket/REST--> Nginx[NGINX Gateway]
 
-    F_Auth --> C_Sec[:core-security]
-    F_Reports --> C_AI[:core-ai]
+    subgraph Backend_Cloud[FastAPI Backend Ecosystem]
+        Nginx --> API[FastAPI Web Server]
+        API --> Orchestrator[Agent Orchestrator]
+        Orchestrator --> Specialists[Diagnostic/Appt Agents]
+        API --> PG[(PostgreSQL)]
+        Orchestrator --> Chroma[(ChromaDB Vector Store)]
+        API --> Redis[(Redis Pub/Sub & Broker)]
+        Redis --> Worker[Celery Async Workers]
+    end
 
-    C_Data[:core-data] --> C_Domain
-    C_Data --> C_Net[:core-network]
-    C_Data --> C_DB[:core-database]
+    Worker --> Gemini[Gemini 1.5 AI]
+    Orchestrator --> Gemini
 ```
 
 ## Architectural Trade-offs

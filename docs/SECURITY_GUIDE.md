@@ -10,6 +10,7 @@
 ## Secure PII Handling
 - **Logs**: Timber is configured with a custom `CrashlyticsTree` that filters out sensitive information before sending logs to the server.
 - **Preferences**: Token management uses `EncryptedSharedPreferences` for additional layer of protection.
+- **Biometric Identity**: Securely integrated using the `BiometricPrompt` API, ensuring that only the authorized user can access sensitive health records on the device.
 
 ## Data in Transit
 - **JWT Authentication**: Secure stateless authentication with automatic token refresh.

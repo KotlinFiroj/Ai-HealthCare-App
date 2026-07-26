@@ -11,6 +11,15 @@ import com.mediai.enterprise.feature.chatbot.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
+/**
+ * [ChatRepositoryImpl]
+ * Implementation of [ChatRepository] that provides real-time conversational capabilities.
+ * Integrates with [ChatApiService] for AI responses and [MediAIWebSocketClient] for push events.
+ *
+ * @property chatDao Local persistence for conversation history.
+ * @property apiService Remote service to interact with the backend AI agents.
+ * @property wsClient Client to handle persistent WebSocket connections for real-time sync.
+ */
 class ChatRepositoryImpl @Inject constructor(
     private val chatDao: ChatDao,
     private val apiService: ChatApiService,

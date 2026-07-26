@@ -8,21 +8,20 @@
 
 ### 1. Autonomous Agentic Flow
 - **Orchestrator**: A central Gemini-powered agent that receives user intents.
-- **Function Calling**: The agent autonomously selects Python tools (e.g., `search_doctors`) to satisfy requests.
-- **Specialists**: Sub-agents for Diagnostics and Appointments handle refined reasoning.
+- **Function Calling**: The agent autonomously selects Python tools (e.g., `search_doctors`, `book_appointment`, `trigger_sos_alert`) to satisfy requests.
+- **State Management**: The orchestrator decomposes complex multi-step queries (e.g., "Analyze my symptoms and book a specialist for tomorrow") by calling tools in sequence.
 
 ### 2. Retrieval-Augmented Generation (RAG)
 - Used in the Medical Chatbot.
-- Injects relevant context from a local knowledge base (WHO guidelines, hospital policies) into the LLM prompt to ground answers and reduce hallucinations.
+- Injects relevant context from a local knowledge base (WHO guidelines, hospital policies) into the LLM prompt.
+- **Vector Search**: ChromaDB stores semantic embeddings of medical documentation, allowing for high-accuracy context retrieval even with non-exact keyword matches.
 
-## Prompt Engineering Strategy
-We use highly structured "System Instructions" that define the AI's persona, safety constraints, and output format (JSON). This ensures predictable and parsable integration with our backend services.
+### 3. Medical Report Summarization
+- Analyzes raw OCR text from Blood Tests, MRI, and prescriptions.
+- Provides plain English summaries, risk detection, and follow-up questions.
+- Uses specialized prompt templates for different document categories to ensure clinical accuracy.
 
-## Evaluation Pipeline
-The `AiEvaluator` scores responses based on:
-1. **Clinical Accuracy**: Matching retrieved context.
-2. **Safety Compliance**: Presence of disclaimers.
-3. **Emergency Sensitivity**: Correct redirection to SOS.
+## AI Safety & Guardrails
 
 ## AI Safety & Guardrails
 - **Disclaimers**: Every AI response includes a mandatory medical disclaimer.

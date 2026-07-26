@@ -13,6 +13,14 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * [HomeViewModel]
+ * Manages the UI state for the main dashboard.
+ * Coordinates data fetching from [GetDashboardDataUseCase] and logs analytics events.
+ *
+ * @property getDashboardDataUseCase Use case to retrieve aggregated dashboard metrics.
+ * @property analyticsHelper Helper to log user interactions and lifecycle events.
+ */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getDashboardDataUseCase: GetDashboardDataUseCase,

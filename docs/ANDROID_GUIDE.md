@@ -21,6 +21,7 @@
 - **Release Workflow**: Automated tagging, release note generation, and distribution to Firebase App Distribution upon `v*` tag push.
 
 ## Best Practices
-1. **Unidirectional Data Flow (UDF)**: ViewModels expose a single `uiState` flow.
-2. **Dependency Injection**: Use Hilt for all constructor injection to maintain testability.
-3. **Async Programming**: Coroutines for background tasks and Flow for reactive streams.
+1. **Unidirectional Data Flow (UDF)**: ViewModels expose a single `uiState` flow, ensuring predictable UI state management and easier debugging.
+2. **Dependency Injection**: Use Hilt for all constructor injection to maintain testability and modularity across the 20+ feature and core modules.
+3. **Async Programming**: Coroutines for non-blocking background tasks and Flow for reactive streams of health data.
+4. **Offline First**: All healthcare features are designed to function without an internet connection, with background sync (WorkManager) handling data consistency.

@@ -11,8 +11,16 @@ from typing import List
 orchestrator = MediAiOrchestrator()
 
 class ChatService:
+    """
+    [ChatService]
+    Business logic for managing conversational AI workflows.
+    Coordinates between RAG retrieval, Agent orchestration, and real-time broadcasting.
+    """
     @staticmethod
     async def get_chat_history(db: AsyncSession, user_id: UUID) -> List[ChatMessage]:
+        """
+        Retrieves the chronological conversation history for a specific user.
+        """
         result = await db.execute(
             select(ChatMessage)
             .where(ChatMessage.user_id == user_id)
@@ -22,6 +30,13 @@ class ChatService:
 
     @staticmethod
     async def send_message(db: AsyncSession, user_id: UUID, content: str) -> ChatMessage:
+        """
+        Orchestrates the full Agentic flow:
+        1. Persists user query.
+        2. Performs semantic retrieval via RAG.
+        3. Invokes the AI Orchestrator for autonomous tool/agent selection.
+        4. Broadcasts the response via WebSockets for real-time multi-device sync.
+        """
         # 1. Save User Message
         user_msg = ChatMessage(user_id=user_id, role="user", content=content)
         db.add(user_msg)

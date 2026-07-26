@@ -28,19 +28,31 @@ MediAI Enterprise is powered by a high-performance **FastAPI** backend:
 
 The project follows **Clean Architecture** principles and is modularized into 20+ feature and core layers.
 
+### 🏗️ Full-Stack Dependency Graph
+
 ```mermaid
 graph TD
-    App([:app]) --> Features
-    Features --> Core
-
-    subgraph Core Layers
-        C_AI[:core:ai]
-        C_Sec[:core:security]
-        C_DB[:core:database]
-        C_Net[:core:network]
-        C_UI[:core:ui]
-        C_An[:core:analytics]
+    subgraph Mobile_App[Android Multi-Module App]
+        UI[Material 3 UI] --> VM[MVI/MVVM ViewModels]
+        VM --> UseCase[Domain Logic]
+        UseCase --> Repo[Secure Repositories]
+        Repo --> SQLCipher[(SQLCipher + Keystore)]
     end
+
+    Mobile_App --WebSocket/REST--> Nginx[NGINX Gateway]
+
+    subgraph Backend_Cloud[FastAPI Backend Ecosystem]
+        Nginx --> API[FastAPI Web Server]
+        API --> Orchestrator[Agent Orchestrator]
+        Orchestrator --> Specialists[Diagnostic/Appt Agents]
+        API --> PG[(PostgreSQL)]
+        Orchestrator --> Chroma[(ChromaDB Vector Store)]
+        API --> Redis[(Redis Pub/Sub & Broker)]
+        Redis --> Worker[Celery Async Workers]
+    end
+
+    Worker --> Gemini[Gemini 1.5 AI]
+    Orchestrator --> Gemini
 ```
 
 ## Performance & Reliability
